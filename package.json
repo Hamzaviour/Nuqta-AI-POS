@@ -1,0 +1,179 @@
+{
+  "name": "al-deewan-pos",
+  "version": "1.0.0",
+  "description": "Al-Deewan POS System - Wholesale & Retail Point of Sale, Inventory Management and Accounting",
+  "main": "out/main/index.js",
+  "author": "Al-Deewan Brand",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:all": "npm run build && electron-builder --win --mac",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:all": "npm run build && electron-builder --win --mac",
+    "package:win-dir": "npm run build && electron-builder --win --dir",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/sql.js": "^1.4.11",
+    "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
+    "date-fns": "3.3.1",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "0.363.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hot-toast": "2.4.1",
+    "react-router-dom": "6.22.3",
+    "recharts": "2.12.2",
+    "sql.js": "^1.14.1",
+    "uuid": "9.0.1"
+  },
+  "devDependencies": {
+    "@electron-toolkit/preload": "3.0.0",
+    "@electron-toolkit/utils": "3.0.0",
+    "@types/node": "20.11.20",
+    "@types/react": "18.2.56",
+    "@types/react-dom": "18.2.19",
+    "@types/uuid": "9.0.8",
+    "@vitejs/plugin-react": "4.2.1",
+    "electron": "29.1.0",
+    "electron-builder": "24.13.3",
+    "electron-vite": "2.0.0",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.3",
+    "typescript": "5.3.3",
+    "vite": "5.1.4"
+  },
+  "build": {
+    "appId": "com.aldeewan.pos",
+    "productName": "Al-Deewan POS System",
+    "copyright": "Copyright © 2026 Al-Deewan Brand",
+    "compression": "maximum",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "!out/**/*.map"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.ico",
+      "executableName": "AlDeewan",
+      "artifactName": "Al-Deewan-Setup-${version}.${ext}",
+      "publisherName": "Al-Deewan",
+      "legalTrademarks": "Al-Deewan POS System"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Al-Deewan POS System",
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "perMachine": true,
+      "allowElevation": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64",
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.png",
+      "category": "public.app-category.business",
+      "artifactName": "Al-Deewan-POS-${version}-Mac-${arch}.${ext}",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "resources/entitlements.mac.plist",
+      "entitlementsInherit": "resources/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Al-Deewan POS uses the microphone for Voice AI invoicing and voice commands."
+      }
+    },
+    "dmg": {
+      "title": "Al-Deewan POS System ${version}",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "icon": "resources/icon.png"
+    },
+    "extraResources": [
+      {
+        "from": "resources/",
+        "to": "resources/"
+      },
+      {
+        "from": "electron/database/schema.sql",
+        "to": "electron/database/schema.sql"
+      },
+      {
+        "from": "README_DATA_MIGRATION.md",
+        "to": "README_DATA_MIGRATION.md"
+      },
+      {
+        "from": "README_INSTALLATION.md",
+        "to": "README_INSTALLATION.md"
+      },
+      {
+        "from": "USER_MANUAL.md",
+        "to": "USER_MANUAL.md"
+      },
+      {
+        "from": "PROPOSAL_AND_FEATURE_SPECIFICATION.md",
+        "to": "PROPOSAL_AND_FEATURE_SPECIFICATION.md"
+      }
+    ]
+  }
+}

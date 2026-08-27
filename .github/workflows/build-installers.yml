@@ -1,0 +1,61 @@
+name: Build Production Installers (Windows & macOS)
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Windows Production Installer
+        run: npm run build:win
+
+      - name: Upload Windows Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Al-Deewan-Windows-Installer
+          path: dist/Al-Deewan-Setup-*.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build macOS Production DMG & Zip
+        run: npm run build:mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload macOS DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Al-Deewan-macOS-Installer
+          path: |
+            dist/Al-Deewan-POS-*.dmg
+            dist/Al-Deewan-POS-*.zip
