@@ -25,6 +25,8 @@ jobs:
 
       - name: Build Windows Production Installer
         run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows Installer Artifact
         uses: actions/upload-artifact@v4
@@ -51,6 +53,7 @@ jobs:
         run: npm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS DMG Artifact
         uses: actions/upload-artifact@v4

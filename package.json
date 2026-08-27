@@ -9,14 +9,14 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:all": "npm run build && electron-builder --win --mac",
-    "package": "npm run build && electron-builder",
-    "package:win": "npm run build && electron-builder --win",
-    "package:mac": "npm run build && electron-builder --mac",
-    "package:all": "npm run build && electron-builder --win --mac",
-    "package:win-dir": "npm run build && electron-builder --win --dir",
+    "build:win": "npm run build && electron-builder --win --publish never",
+    "build:mac": "npm run build && electron-builder --mac --publish never",
+    "build:all": "npm run build && electron-builder --win --mac --publish never",
+    "package": "npm run build && electron-builder --publish never",
+    "package:win": "npm run build && electron-builder --win --publish never",
+    "package:mac": "npm run build && electron-builder --mac --publish never",
+    "package:all": "npm run build && electron-builder --win --mac --publish never",
+    "package:win-dir": "npm run build && electron-builder --win --dir --publish never",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -60,6 +60,7 @@
     "directories": {
       "output": "dist"
     },
+    "publish": null,
     "files": [
       "out/**/*",
       "!out/**/*.map"
