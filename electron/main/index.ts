@@ -1227,7 +1227,12 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('cloudflare:start', async (_, port?: number) => {
     try {
-      const targetPort = port || parseInt(getSetting('mobile_server_port') || '8080', 10) || 8080
+      let mobileInfo = getMobileServerInfo()
+      if (!mobileInfo.isRunning) {
+        const preferredPort = port || parseInt(getSetting('mobile_server_port') || '8080', 10) || 8080
+        mobileInfo = await startMobileServer(preferredPort)
+      }
+      const targetPort = mobileInfo.isRunning ? mobileInfo.port : (port || parseInt(getSetting('mobile_server_port') || '8080', 10) || 8080)
       const status = await startCloudflareTunnel(targetPort)
       return { success: !status.error, data: status, error: status.error }
     } catch (err: any) {

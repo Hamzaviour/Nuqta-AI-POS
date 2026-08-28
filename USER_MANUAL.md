@@ -1,6 +1,6 @@
 # Al-Deewan POS System — Comprehensive Operations & User Manual
 
-**Version:** 1.0.0 Production Release  
+**Version:** 2.0.0 Production Release  
 **Platform:** Windows 10/11 & macOS  
 **Target Industry:** Wholesale Clothing, Retail Fashion, Boutiques, Fabrics & General Retail  
 

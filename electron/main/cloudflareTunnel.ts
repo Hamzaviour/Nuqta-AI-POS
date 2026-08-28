@@ -223,6 +223,42 @@ export function getCloudflareTunnelStatus(): CloudflareStatus {
 }
 
 /**
+ * Stop running Cloudflare Tunnel
+ */
+export function stopCloudflareTunnel(): void {
+  if (tunnelProcess) {
+    console.log('[Cloudflare] Stopping active tunnel...')
+    const proc = tunnelProcess
+    const pid = proc.pid
+    tunnelProcess = null
+    if (pid) {
+      try {
+        if (process.platform === 'win32') {
+          // Use synchronous taskkill or immediate process kill
+          try {
+            process.kill(pid, 'SIGKILL')
+          } catch (_) {}
+          try {
+            exec(`taskkill /pid ${pid} /T /F`, () => {})
+          } catch (_) {}
+        } else {
+          try {
+            proc.kill('SIGTERM')
+          } catch (_) {}
+          setTimeout(() => {
+            try {
+              process.kill(pid, 'SIGKILL')
+            } catch (_) {}
+          }, 500)
+        }
+      } catch (_) {}
+    }
+  }
+  currentPublicUrl = null
+  currentError = null
+}
+
+/**
  * Start a Cloudflare Tunnel for the specified local port
  */
 export async function startCloudflareTunnel(port: number = 8080): Promise<CloudflareStatus> {
@@ -230,6 +266,7 @@ export async function startCloudflareTunnel(port: number = 8080): Promise<Cloudf
     return getCloudflareTunnelStatus()
   }
 
+  // Ensure any existing tunnel is stopped first
   stopCloudflareTunnel()
 
   const check = await checkCloudflaredInstalled()
@@ -249,16 +286,18 @@ export async function startCloudflareTunnel(port: number = 8080): Promise<Cloudf
 
   return new Promise((resolve) => {
     const exe = check.executablePath!
-    const args = ['tunnel', '--url', `http://localhost:${port}`]
+    const args = ['tunnel', '--url', `http://127.0.0.1:${port}`]
 
     console.log(`[Cloudflare] Launching: "${exe}" ${args.join(' ')}`)
 
     let resolved = false
+    let collectedLogs: string[] = []
+
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true
         if (!currentPublicUrl) {
-          currentError = 'Timed out waiting for Cloudflare public URL. Check internet connection.'
+          currentError = 'Timed out waiting for Cloudflare public URL. Check your internet connection.'
         }
         resolve(getCloudflareTunnelStatus())
       }
@@ -280,7 +319,10 @@ export async function startCloudflareTunnel(port: number = 8080): Promise<Cloudf
     const processOutput = (data: Buffer) => {
       const text = data.toString()
       console.log(`[Cloudflare Log] ${text.trim()}`)
+      collectedLogs.push(text)
+      if (collectedLogs.length > 30) collectedLogs.shift()
 
+      // Match public trycloudflare.com URL
       const match = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/i)
       if (match && match[0]) {
         currentPublicUrl = match[0]
@@ -320,35 +362,12 @@ export async function startCloudflareTunnel(port: number = 8080): Promise<Cloudf
       if (!resolved) {
         resolved = true
         clearTimeout(timeout)
-        if (!currentError) currentError = `Process exited unexpectedly with code ${code}`
+        if (!currentError) {
+          const recentError = collectedLogs.find(l => /ERR|error|failed|fatal/i.test(l))
+          currentError = recentError ? recentError.trim() : `Process exited unexpectedly with code ${code}`
+        }
         resolve(getCloudflareTunnelStatus())
       }
     })
   })
-}
-
-/**
- * Stop running Cloudflare Tunnel
- */
-export function stopCloudflareTunnel(): void {
-  if (tunnelProcess) {
-    console.log('[Cloudflare] Stopping active tunnel...')
-    try {
-      if (process.platform === 'win32' && tunnelProcess.pid) {
-        exec(`taskkill /pid ${tunnelProcess.pid} /T /F`, () => {})
-      } else if (tunnelProcess.pid) {
-        tunnelProcess.kill('SIGTERM')
-        const pid = tunnelProcess.pid
-        setTimeout(() => {
-          try {
-            process.kill(pid, 0)
-            process.kill(pid, 'SIGKILL')
-          } catch (_) {}
-        }, 1000)
-      }
-    } catch (_) {}
-    tunnelProcess = null
-  }
-  currentPublicUrl = null
-  currentError = null
 }

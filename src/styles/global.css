@@ -789,7 +789,22 @@ p  { line-height: 1.6; }
   color: var(--color-danger);
 }
 
-.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal > form,
+.modal form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
 .modal-footer {
   padding: 16px 24px;
   border-top: 1px solid var(--color-border);

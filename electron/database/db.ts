@@ -188,15 +188,57 @@ export async function initDatabase(): Promise<DatabaseWrapper> {
     } catch {}
   }
 
-  try { dbInstance.prepare('ALTER TABLE items ADD COLUMN supplier_id TEXT REFERENCES suppliers(id)').run() } catch {}
-  try { dbInstance.prepare('ALTER TABLE items ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1').run() } catch {}
-  try { dbInstance.prepare('ALTER TABLE items ADD COLUMN reorder_level REAL NOT NULL DEFAULT 0').run() } catch {}
-  try { dbInstance.prepare('ALTER TABLE suppliers ADD COLUMN balance REAL NOT NULL DEFAULT 0').run() } catch {}
-  try { dbInstance.prepare('ALTER TABLE customers ADD COLUMN balance REAL NOT NULL DEFAULT 0').run() } catch {}
+  // Auto-Migrations for items table
+  const itemMigrations = [
+    { col: 'created_by', type: 'TEXT' },
+    { col: 'created_at', type: "TEXT DEFAULT (datetime('now','localtime'))" },
+    { col: 'updated_at', type: "TEXT DEFAULT (datetime('now','localtime'))" },
+    { col: 'size_variant', type: 'TEXT' },
+    { col: 'barcode', type: 'TEXT' },
+    { col: 'supplier_id', type: 'TEXT REFERENCES suppliers(id)' },
+    { col: 'brand_id', type: 'TEXT REFERENCES brands(id)' },
+    { col: 'category_id', type: 'TEXT REFERENCES categories(id)' },
+    { col: 'reorder_level', type: 'REAL NOT NULL DEFAULT 0' },
+    { col: 'is_active', type: 'INTEGER NOT NULL DEFAULT 1' },
+    { col: 'cost_price', type: 'REAL NOT NULL DEFAULT 0' },
+    { col: 'retail_price', type: 'REAL NOT NULL DEFAULT 0' },
+    { col: 'quantity_on_hand', type: 'REAL NOT NULL DEFAULT 0' }
+  ]
+  for (const m of itemMigrations) {
+    try { dbInstance.prepare(`ALTER TABLE items ADD COLUMN ${m.col} ${m.type}`).run() } catch {}
+  }
 
-  // Auto-correct any negative stock quantities to 0
+  // Auto-Migrations for suppliers & customers
+  const supplierMigrations = [
+    { col: 'balance', type: 'REAL NOT NULL DEFAULT 0' },
+    { col: 'contact', type: 'TEXT' },
+    { col: 'address', type: 'TEXT' },
+    { col: 'notes', type: 'TEXT' },
+    { col: 'created_by', type: 'TEXT' },
+    { col: 'created_at', type: "TEXT DEFAULT (datetime('now','localtime'))" }
+  ]
+  for (const m of supplierMigrations) {
+    try { dbInstance.prepare(`ALTER TABLE suppliers ADD COLUMN ${m.col} ${m.type}`).run() } catch {}
+  }
+
+  const customerMigrations = [
+    { col: 'balance', type: 'REAL NOT NULL DEFAULT 0' },
+    { col: 'phone', type: 'TEXT' },
+    { col: 'whatsapp', type: 'TEXT' },
+    { col: 'address', type: 'TEXT' },
+    { col: 'type', type: "TEXT NOT NULL DEFAULT 'walkin'" },
+    { col: 'notes', type: 'TEXT' },
+    { col: 'created_by', type: 'TEXT' },
+    { col: 'created_at', type: "TEXT DEFAULT (datetime('now','localtime'))" }
+  ]
+  for (const m of customerMigrations) {
+    try { dbInstance.prepare(`ALTER TABLE customers ADD COLUMN ${m.col} ${m.type}`).run() } catch {}
+  }
+
+  // Auto-correct any negative stock quantities to 0 & set defaults
   try { dbInstance.prepare('UPDATE items SET quantity_on_hand = 0 WHERE quantity_on_hand < 0').run() } catch {}
   try { dbInstance.prepare('UPDATE items SET is_active = 1 WHERE is_active IS NULL').run() } catch {}
+  try { dbInstance.prepare("UPDATE items SET created_by = 'usr-owner' WHERE created_by IS NULL").run() } catch {}
 
   // Expenses table migration & seed accounts
   try {

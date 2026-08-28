@@ -86,6 +86,8 @@ export default function SalesPage() {
   const totalSales    = activeInvoices.reduce((s, i) => s + i.grand_total, 0)
   const totalDiscount = activeInvoices.reduce((s, i) => s + i.discount_amount, 0)
   const totalProfit   = activeInvoices.reduce((s, i) => s + i.profit, 0)
+  const realizedProfit = activeInvoices.reduce((s, i) => s + (i.profit * (i.grand_total > 0 ? (i.amount_paid / i.grand_total) : 1)), 0)
+  const pendingCreditProfit = Math.max(0, totalProfit - realizedProfit)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -247,10 +249,15 @@ export default function SalesPage() {
         </div>
         {canViewProfit && (
           <div style={{ fontSize: '0.8125rem' }}>
-            <span style={{ color: 'var(--color-text-muted)' }}>🔒 Net Profit: </span>
+            <span style={{ color: 'var(--color-text-muted)' }}>🔒 Invoiced Profit: </span>
             <strong style={{ color: totalProfit >= 0 ? 'var(--color-profit)' : 'var(--color-loss)', fontFamily: 'var(--font-mono)' }}>
               {totalProfit >= 0 ? '+' : ''}{fmt(totalProfit)}
             </strong>
+            {pendingCreditProfit > 0 && (
+              <span style={{ marginLeft: 6, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                (Realized: <strong style={{ color: 'var(--color-primary)' }}>{fmt(realizedProfit)}</strong> · <span style={{ color: 'var(--color-warning)' }}>{fmt(pendingCreditProfit)} pending credit</span>)
+              </span>
+            )}
           </div>
         )}
       </div>

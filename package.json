@@ -1,7 +1,7 @@
 {
   "name": "al-deewan-pos",
-  "version": "1.0.0",
-  "description": "Al-Deewan POS System - Wholesale & Retail Point of Sale, Inventory Management and Accounting",
+  "version": "2.0.0",
+  "description": "Al-Deewan POS System v2.0.0 - Wholesale & Retail Point of Sale, Inventory Management, Accounting and Remote Live Portal",
   "main": "out/main/index.js",
   "author": "Al-Deewan Brand",
   "license": "UNLICENSED",
@@ -82,11 +82,11 @@
       ],
       "icon": "resources/icon.ico",
       "executableName": "AlDeewan",
-      "artifactName": "Al-Deewan-Setup-${version}.${ext}",
       "publisherName": "Al-Deewan",
       "legalTrademarks": "Al-Deewan POS System"
     },
     "nsis": {
+      "artifactName": "Al-Deewan-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
@@ -99,6 +99,9 @@
       "runAfterFinish": true,
       "perMachine": true,
       "allowElevation": true
+    },
+    "portable": {
+      "artifactName": "Al-Deewan-Portable-${version}.${ext}"
     },
     "mac": {
       "target": [

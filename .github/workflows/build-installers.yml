@@ -6,9 +6,19 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Publish as GitHub Release?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
+    name: Build Windows Setup & Portable Installer
     runs-on: windows-latest
     steps:
       - name: Checkout Source Code
@@ -23,18 +33,32 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Windows Production Installer
+      - name: Verify TypeScript Types
+        run: npm run typecheck
+
+      - name: Build Windows Production Installers (.exe & Portable)
         run: npm run build:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Windows Installer Artifact
+      - name: Upload Windows Installer Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Al-Deewan-Windows-Installer
-          path: dist/Al-Deewan-Setup-*.exe
+          name: Al-Deewan-POS-Windows-Installer-v2.0
+          path: dist/Al-Deewan-*.exe
+          if-no-files-found: error
+
+      - name: Publish Windows Assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Al-Deewan-*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-macos:
+    name: Build macOS DMG & Zip Installer
     runs-on: macos-latest
     steps:
       - name: Checkout Source Code
@@ -49,16 +73,31 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Verify TypeScript Types
+        run: npm run typecheck
+
       - name: Build macOS Production DMG & Zip
         run: npm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload macOS DMG Artifact
+      - name: Upload macOS Installer Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Al-Deewan-macOS-Installer
+          name: Al-Deewan-POS-macOS-Installer-v2.0
           path: |
             dist/Al-Deewan-POS-*.dmg
             dist/Al-Deewan-POS-*.zip
+          if-no-files-found: error
+
+      - name: Publish macOS Assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Al-Deewan-POS-*.dmg
+            dist/Al-Deewan-POS-*.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

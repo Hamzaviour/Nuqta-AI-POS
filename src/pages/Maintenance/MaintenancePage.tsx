@@ -3247,9 +3247,16 @@ function MobileWhatsAppTab() {
   }
 
   const handleStartCloudflare = async () => {
-    if (!serverInfo?.isRunning) await startServer()
+    let activePort = serverInfo?.isRunning ? serverInfo.port : (parseInt(portInput, 10) || 8080)
+    if (!serverInfo?.isRunning) {
+      const sRes = await window.api.startMobileServer(activePort)
+      if (sRes.success && sRes.data) {
+        setServerInfo(sRes.data)
+        activePort = sRes.data.port
+      }
+    }
     setCfLoading(true)
-    const res = await window.api.startCloudflareTunnel(parseInt(portInput, 10) || 8080)
+    const res = await window.api.startCloudflareTunnel(activePort)
     if (res.success && res.data && res.data.publicUrl) {
       setCfStatus(res.data)
       toast.success('🎉 Worldwide Cloudflare Tunnel is LIVE!')

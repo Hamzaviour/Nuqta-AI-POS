@@ -611,14 +611,14 @@ function AddEditItemModal({
   return (
     <>
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
+        <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div className="modal-header" style={{ flexShrink: 0 }}>
             <Package size={18} style={{ color: 'var(--color-primary)' }} />
             <span className="modal-title">{isEdit ? 'Edit Item' : 'Add New Item to Catalog'}</span>
             <button className="modal-close" onClick={onClose}>✕</button>
           </div>
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: 24 }}>
               <div className="grid-2" style={{ gap: 16 }}>
                 <div className="form-group">
                   <label className="form-label">Part Number / SKU *</label>
