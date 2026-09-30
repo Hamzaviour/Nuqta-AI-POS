@@ -2,14 +2,21 @@ import React, { createContext, useContext, useEffect, useCallback, ReactNode, us
 
 type HotkeyHandler = () => void
 
+interface HotkeyRegistration {
+  id: number
+  priority: number
+  handler: HotkeyHandler
+}
+
 interface HotkeyContextType {
-  register: (key: string, handler: HotkeyHandler) => () => void
+  register: (key: string, handler: HotkeyHandler, priority?: number) => () => void
 }
 
 const HotkeyContext = createContext<HotkeyContextType | null>(null)
 
-// Stack of handlers for each hotkey so child unmounts restore parent handlers (like AppShell F2)
-const handlerStacks = new Map<string, HotkeyHandler[]>()
+let nextRegistrationId = 0
+// Stack of handlers for each hotkey with priority support (e.g., shell=0, page=10, modal=20)
+const handlerStacks = new Map<string, HotkeyRegistration[]>()
 
 function normalizeKey(e: KeyboardEvent): string {
   const parts: string[] = []
@@ -37,9 +44,15 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
         if (e.key.startsWith('F')) e.preventDefault()
         if (e.ctrlKey || e.altKey) e.preventDefault()
         
-        // Execute the most recently registered active handler on the stack
-        const topHandler = stack[stack.length - 1]
-        topHandler()
+        // Execute the highest priority handler; if tied, most recently registered (highest id)
+        let top = stack[0]
+        for (let i = 1; i < stack.length; i++) {
+          const item = stack[i]
+          if (item.priority > top.priority || (item.priority === top.priority && item.id > top.id)) {
+            top = item
+          }
+        }
+        top.handler()
       }
     }
 
@@ -47,19 +60,20 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [])
 
-  const register = useCallback((key: string, handler: HotkeyHandler) => {
+  const register = useCallback((key: string, handler: HotkeyHandler, priority: number = 10) => {
     let stack = handlerStacks.get(key)
     if (!stack) {
       stack = []
       handlerStacks.set(key, stack)
     }
-    stack.push(handler)
+    const reg: HotkeyRegistration = { id: ++nextRegistrationId, priority, handler }
+    stack.push(reg)
 
     // Cleanup function that removes only this specific handler
     return () => {
       const currentStack = handlerStacks.get(key)
       if (currentStack) {
-        const idx = currentStack.indexOf(handler)
+        const idx = currentStack.findIndex(r => r.id === reg.id)
         if (idx !== -1) {
           currentStack.splice(idx, 1)
         }
@@ -77,11 +91,15 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useHotkeys(bindings: Record<string, HotkeyHandler>) {
+export function useHotkeys(
+  bindings: Record<string, HotkeyHandler>,
+  options?: { priority?: number }
+) {
   const ctx = useContext(HotkeyContext)
   if (!ctx) throw new Error('useHotkeys must be used within HotkeyProvider')
 
   const { register } = ctx
+  const priority = options?.priority ?? 10
   const bindingsRef = useRef(bindings)
   bindingsRef.current = bindings
 
@@ -92,12 +110,12 @@ export function useHotkeys(bindings: Record<string, HotkeyHandler>) {
     for (const key of keys) {
       const unreg = register(key, () => {
         bindingsRef.current[key]?.()
-      })
+      }, priority)
       unregisters.push(unreg)
     }
 
     return () => {
       unregisters.forEach(fn => fn())
     }
-  }, [register])
+  }, [register, priority])
 }

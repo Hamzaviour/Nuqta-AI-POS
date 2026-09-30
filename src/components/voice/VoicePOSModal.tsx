@@ -3,12 +3,60 @@ import {
   Mic, MicOff, Volume2, VolumeX, Sparkles, Check, AlertTriangle,
   X, CheckCircle, RefreshCw, ShoppingCart, User, CreditCard,
   Banknote, ArrowRight, Shield, Play, Pause, CornerDownLeft,
-  Activity, Radio, AlertCircle, Cpu, Send, Square, Settings, Tag
+  Activity, Radio, AlertCircle, Cpu, Send, Square, Settings, Tag,
+  Minus, Plus, Trash2, Maximize2, Minimize2
 } from 'lucide-react'
 import type { Item, Customer, CartItem, VoiceParsedCommand, VoiceMessage } from '../../types'
 import { parseVoiceCommand, speechSynthesizer, VoicePOSContext } from '../../services/voicePosAgent'
 import { encodeWAV, downsampleBuffer } from '../../services/wavEncoder'
 import toast from 'react-hot-toast'
+
+// Modern symmetrical 16-bar frequency wave multipliers
+const WAVE_MULTIPLIERS = [0.25, 0.45, 0.7, 0.95, 1.3, 1.6, 1.9, 2.2, 2.2, 1.9, 1.6, 1.3, 0.95, 0.7, 0.45, 0.25]
+
+// Low-latency procedural audio earcons (zero external asset dependencies)
+function playEarcon(type: 'start' | 'success' | 'error', muted: boolean) {
+  if (muted) return
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    const now = ctx.currentTime
+
+    if (type === 'start') {
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(440, now)
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.08)
+      gain.gain.setValueAtTime(0.05, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12)
+      osc.start(now)
+      osc.stop(now + 0.12)
+    } else if (type === 'success') {
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(523.25, now) // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.05) // E5
+      osc.frequency.setValueAtTime(783.99, now + 0.1) // G5
+      gain.gain.setValueAtTime(0.06, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
+      osc.start(now)
+      osc.stop(now + 0.22)
+    } else {
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(280, now)
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.1)
+      gain.gain.setValueAtTime(0.07, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
+      osc.start(now)
+      osc.stop(now + 0.15)
+    }
+  } catch {
+    // Ignore audio context autoplay restriction
+  }
+}
 
 interface VoicePOSModalProps {
   isOpen: boolean
@@ -62,6 +110,7 @@ export function VoicePOSModal({
   // Master recording state: 'idle' | 'recording' | 'transcribing'
   const [recordState, setRecordState] = useState<'idle' | 'recording' | 'transcribing'>('idle')
   const [isMuted, setIsMuted] = useState(false)
+  const [isCompactMode, setIsCompactMode] = useState(true)
   const [activeLanguage, setActiveLanguage] = useState<'auto' | 'en' | 'ur'>('auto')
   const [interimTranscript, setInterimTranscript] = useState('')
   const [messages, setMessages] = useState<VoiceMessage[]>([])
@@ -77,20 +126,14 @@ export function VoicePOSModal({
   })
   const [manualInput, setManualInput] = useState('')
   const [isCommitting, setIsCommitting] = useState(false)
-  const [llmProviderLabel, setLlmProviderLabel] = useState('Groq LLaMA 3.3')
-  const [expandedJsonMsgIds, setExpandedJsonMsgIds] = useState<Record<string, boolean>>({})
 
-  // Load active AI LLM provider info
+  // Always start with compact floating capsule when Voice Invoice is opened, ensure speech synthesizer is silent
   useEffect(() => {
-    if (isOpen && window.api?.getAllSettings) {
-      window.api.getAllSettings().then(s => {
-        const p = (s as Record<string, string>)['voice_llm_provider'] || 'groq'
-        const customModel = (s as Record<string, string>)['voice_llm_model']
-        if (p === 'omniroute') setLlmProviderLabel(`OmniRoute (${customModel || 'GPT-4o-mini'})`)
-        else if (p === 'openai') setLlmProviderLabel(`OpenAI (${customModel || 'GPT-4o-mini'})`)
-        else if (p === 'custom') setLlmProviderLabel(`Custom LLM (${customModel || 'AI'})`)
-        else setLlmProviderLabel('Groq LLaMA 3.3')
-      }).catch(() => {})
+    if (isOpen) {
+      setIsCompactMode(true)
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
     }
   }, [isOpen])
 
@@ -112,9 +155,8 @@ export function VoicePOSModal({
   const totalDiscount = lineDiscounts + currentDiscount
   const grandTotal = Math.max(0, subtotal - totalDiscount)
 
-  // Assistant response speaker
+  // Assistant response message logger (voice feedback / TTS disabled per requirements)
   const respond = useCallback((text: string, lang: 'en' | 'ur' = 'en', parsedCmd?: VoiceParsedCommand) => {
-    speechSynthesizer.speak(text, lang)
     setMessages(prev => [
       ...prev,
       {
@@ -158,6 +200,15 @@ export function VoicePOSModal({
 
       // Internal reply helper attaching LLM metadata to assistant message
       const reply = (text: string, lang: 'en' | 'ur' = 'en') => respond(text, lang, parsed)
+
+      // Play acoustic feedback based on parsing result
+      if (parsed.intent === 'UNKNOWN') {
+        playEarcon('error', isMuted)
+      } else if (parsed.needs_disambiguation) {
+        playEarcon('start', isMuted)
+      } else {
+        playEarcon('success', isMuted)
+      }
 
       // Handle Intent
       switch (parsed.intent) {
@@ -519,6 +570,7 @@ export function VoicePOSModal({
         }
       }
     } catch (err: any) {
+      playEarcon('error', isMuted)
       console.error('Voice processing error:', err)
       respond(`Voice processing mein masla aya. Baraye meherbani dobara bolein.`, 'ur')
     } finally {
@@ -529,7 +581,7 @@ export function VoicePOSModal({
     catalog, customers, context, canEditPrice, currentCart, subtotal, grandTotal,
     onAddToCart, onUpdateQty, onUpdatePrice, onRemoveFromCart, onSetCustomer, onCreateCustomer,
     onSetDiscount, onSetPaymentMethod, onSetAmountTendered, onClearCart, onHoldBill, onCommitSale,
-    onClose, respond
+    onClose, respond, isMuted
   ])
 
   // Safe ref for processTranscript
@@ -594,7 +646,7 @@ export function VoicePOSModal({
     try {
       setRecordState('transcribing')
       isProcessingRef.current = true
-      setInterimTranscript('⚡ Transcribing speech...')
+      setInterimTranscript('Transcribing speech...')
 
       const base64Data = await blobToBase64(wavBlob)
       if (window.api?.transcribeAudio) {
@@ -611,7 +663,8 @@ export function VoicePOSModal({
             setRecordState('idle')
           } else {
             const errText = res.error || 'Failed to transcribe audio'
-            setMicError(`Whisper AI note: ${errText}`)
+            playEarcon('error', isMuted)
+            setMicError(`Voice Recognition note: ${errText}`)
             setInterimTranscript('')
             setRecordState('idle')
           }
@@ -621,6 +674,7 @@ export function VoicePOSModal({
         }
       }
     } catch (err: any) {
+      playEarcon('error', isMuted)
       console.warn('Audio transcription dispatch error:', err)
       setMicError(`Transcription dispatch error: ${err.message}`)
       setInterimTranscript('')
@@ -628,23 +682,24 @@ export function VoicePOSModal({
     } finally {
       isProcessingRef.current = false
     }
-  }, [activeLanguage])
+  }, [activeLanguage, isMuted])
 
   // ─── Manual Start Recording ───
   const startRecording = useCallback(() => {
     if (recordState === 'transcribing') return
+    playEarcon('start', isMuted)
     pcmBuffersRef.current = []
     isRecordingRef.current = true
     setRecordState('recording')
     setRecordDuration(0)
     setMicError(null)
-    setInterimTranscript('🔴 Recording... Speak now (Click Stop when finished)')
+    setInterimTranscript('Listening... Speak now (Click Stop or press Spacebar when finished)')
 
     if (durationTimerRef.current) clearInterval(durationTimerRef.current)
     durationTimerRef.current = setInterval(() => {
       setRecordDuration(prev => prev + 1)
     }, 1000)
-  }, [recordState])
+  }, [recordState, isMuted])
 
   // ─── Manual Stop Recording ───
   const stopRecordingAndTranscribe = useCallback(() => {
@@ -809,47 +864,261 @@ export function VoicePOSModal({
 
   if (!isOpen) return null
 
+  // ─── Compact Floating Capsule Mode (Initial Default on Open) ───
+  if (isCompactMode) {
+    return (
+      <>
+        <style>{`
+          @keyframes voiceCapsuleEnter {
+            0% {
+              opacity: 0;
+              transform: translate(-50%, 35px) scale(0.92);
+            }
+            100% {
+              opacity: 1;
+              transform: translate(-50%, 0) scale(1);
+            }
+          }
+          @keyframes voiceCardZoomIn {
+            0% {
+              opacity: 0;
+              transform: scale(0.68) translateY(120px);
+            }
+            70% {
+              opacity: 1;
+              transform: scale(1.015) translateY(-4px);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+          @keyframes voiceOverlayFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+        `}</style>
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1100,
+          width: 'min(780px, 94vw)',
+          background: 'rgba(15, 23, 42, 0.94)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          borderRadius: 20,
+          padding: '10px 16px',
+          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(16, 185, 129, 0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          animation: 'voiceCapsuleEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+        }}>
+          {/* Mic Action Button */}
+          {recordState === 'recording' ? (
+            <button
+              type="button"
+              onClick={stopRecordingAndTranscribe}
+              className="btn btn-danger btn-sm"
+              style={{ padding: '8px 14px', gap: 6, fontWeight: 700, borderRadius: 12, flexShrink: 0 }}
+            >
+              <Square size={13} fill="currentColor" /> Stop
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={startRecording}
+              disabled={recordState === 'transcribing'}
+              className="btn btn-primary btn-sm"
+              style={{ padding: '8px 14px', gap: 6, fontWeight: 700, borderRadius: 12, flexShrink: 0 }}
+            >
+              <Mic size={14} /> Speak
+            </button>
+          )}
+
+          {/* Symmetrical Waveform */}
+          <div style={{ display: 'flex', gap: 2, alignItems: 'center', height: 18, width: 80, flexShrink: 0 }}>
+            {WAVE_MULTIPLIERS.map((multiplier, idx) => {
+              const barHeight = Math.max(3, Math.min(18, Math.round((audioLevel / 100) * 18 * multiplier)))
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    flex: 1,
+                    height: barHeight,
+                    background: recordState === 'recording'
+                      ? 'linear-gradient(to top, #ef4444, #f87171)'
+                      : (audioLevel > 5 ? 'var(--color-primary)' : 'rgba(255,255,255,0.15)'),
+                    borderRadius: 1.5,
+                    transition: 'height 0.08s ease'
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          {/* Status or Latest Spoken Command (Clickable to Zoom) */}
+          <div
+            onClick={() => setIsCompactMode(false)}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: '0.8125rem',
+              cursor: 'pointer'
+            }}
+            title="Click to Zoom into full card view"
+          >
+            {recordState === 'transcribing' ? (
+              <span style={{ color: '#818cf8', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Sparkles size={12} className="animate-spin" /> Transcribing speech...
+              </span>
+            ) : recordState === 'recording' ? (
+              <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                Listening ({recordDuration}s)...
+              </span>
+            ) : (
+              <span style={{ color: 'var(--color-text-secondary)' }}>
+                {interimTranscript || (messages.length > 0 ? messages[messages.length - 1].text : 'Press Spacebar or click Speak')}
+              </span>
+            )}
+          </div>
+
+          {/* Cart Summary Badge */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 10,
+            padding: '4px 10px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            flexShrink: 0
+          }}>
+            <span style={{ color: 'var(--color-primary)' }}>{currentCart.reduce((s, i) => s + i.qty, 0)} items</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>•</span>
+            <span style={{ fontFamily: 'var(--font-mono)' }}>Rs. {grandTotal.toLocaleString()}</span>
+          </div>
+
+          {/* Quick Complete Sale button */}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={async () => {
+              if (currentCart.length === 0) {
+                toast.error('Cart is empty. Add items first.')
+                return
+              }
+              setIsCommitting(true)
+              const ok = await onCommitSale()
+              setIsCommitting(false)
+              if (ok) onClose()
+            }}
+            disabled={isCommitting || currentCart.length === 0}
+            style={{ padding: '6px 12px', fontSize: '0.75rem', fontWeight: 700, borderRadius: 10, flexShrink: 0 }}
+          >
+            {isCommitting ? 'Saving...' : 'Complete'}
+          </button>
+
+          {/* Zoom to Card Button */}
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setIsCompactMode(false)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 10,
+              gap: 6,
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              background: 'rgba(99, 102, 241, 0.15)',
+              color: '#a5b4fc',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              flexShrink: 0
+            }}
+            title="Zoom into Full Voice Invoice Card"
+          >
+            <Maximize2 size={13} />
+            <span>Zoom Card</span>
+          </button>
+
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: 'transparent', border: 'none', color: 'var(--color-text-muted)',
+              cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', flexShrink: 0
+            }}
+            title="Close Voice Assistant (Esc)"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </>
+    )
+  }
+
+  // ─── Full Studio Modal Mode (Zoomed Card View) ───
   return (
-    <div className="modal-overlay" style={{ zIndex: 1100, backdropFilter: 'blur(8px)', background: 'rgba(7, 11, 20, 0.85)' }}>
+    <div className="modal-overlay" style={{
+      zIndex: 1100,
+      backdropFilter: 'blur(8px)',
+      background: 'rgba(7, 11, 20, 0.85)',
+      animation: 'voiceOverlayFadeIn 0.22s ease-out forwards'
+    }}>
       <div className="modal" style={{
         maxWidth: 960, width: '95%', maxHeight: '92vh',
         display: 'flex', flexDirection: 'column',
-        borderRadius: 20, border: '1px solid rgba(16, 185, 129, 0.4)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.7)', overflow: 'hidden'
+        borderRadius: 16, border: '1px solid rgba(16, 185, 129, 0.3)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6)', overflow: 'hidden',
+        animation: 'voiceCardZoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
       }}>
         {/* HEADER */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(99, 102, 241, 0.14) 100%)',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%)',
           borderBottom: '1px solid var(--color-border)',
-          padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+          padding: '16px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              width: 42, height: 42, borderRadius: 12,
-              background: recordState === 'recording' ? 'var(--color-danger)' : (audioLevel > 5 ? 'var(--color-primary-gradient)' : 'rgba(16, 185, 129, 0.3)'),
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: recordState === 'recording' ? '0 0 25px rgba(239, 68, 68, 0.7)' : (audioLevel > 5 ? '0 0 20px rgba(16, 185, 129, 0.5)' : 'none'),
+              width: 40, height: 40, borderRadius: 10,
+              background: recordState === 'recording' ? 'var(--color-danger)' : (audioLevel > 5 ? 'var(--color-primary-gradient)' : 'rgba(16, 185, 129, 0.18)'),
+              color: recordState === 'recording' || audioLevel > 5 ? '#fff' : 'var(--color-primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: recordState === 'recording' ? '0 0 20px rgba(239, 68, 68, 0.6)' : (audioLevel > 5 ? '0 0 16px rgba(16, 185, 129, 0.4)' : 'none'),
               transition: 'all 0.15s ease'
             }}>
-              <Mic size={22} className={recordState === 'recording' ? 'animate-pulse' : ''} />
+              <Mic size={20} className={recordState === 'recording' ? 'animate-pulse' : ''} />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h3 style={{ margin: 0, fontSize: '1.0625rem', fontWeight: 800 }}>👑 Owner Voice POS Agent</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h3 style={{ margin: 0, fontSize: '1.0625rem', fontWeight: 700, letterSpacing: '-0.2px' }}>Voice POS Assistant</h3>
                 <span style={{
-                  fontSize: '0.6875rem', fontWeight: 800, padding: '2px 8px', borderRadius: 12,
-                  background: recordState === 'transcribing' ? 'rgba(99,102,241,0.25)' : (recordState === 'recording' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.15)'),
+                  fontSize: '0.6875rem', fontWeight: 700, padding: '2px 9px', borderRadius: 20,
+                  background: recordState === 'transcribing' ? 'rgba(99,102,241,0.18)' : (recordState === 'recording' ? 'rgba(239, 68, 68, 0.18)' : 'rgba(16, 185, 129, 0.12)'),
                   color: recordState === 'transcribing' ? '#818cf8' : (recordState === 'recording' ? '#ef4444' : 'var(--color-primary)'),
-                  border: `1px solid ${recordState === 'recording' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(16, 185, 129, 0.35)'}`,
-                  display: 'flex', alignItems: 'center', gap: 4
+                  border: `1px solid ${recordState === 'transcribing' ? 'rgba(99, 102, 241, 0.35)' : (recordState === 'recording' ? 'rgba(239, 68, 68, 0.35)' : 'rgba(16, 185, 129, 0.25)')}`,
+                  display: 'flex', alignItems: 'center', gap: 6
                 }}>
-                  {recordState === 'transcribing' ? '⚡ TRANSCRIBING...' : (recordState === 'recording' ? `🔴 RECORDING (${recordDuration}s)` : '🟢 READY — CLICK TO SPEAK')}
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: recordState === 'transcribing' ? '#818cf8' : (recordState === 'recording' ? '#ef4444' : 'var(--color-primary)'),
+                    animation: recordState === 'recording' ? 'ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite' : (recordState === 'transcribing' ? 'pulse 1.5s infinite' : 'none')
+                  }} />
+                  {recordState === 'transcribing' ? 'Transcribing...' : (recordState === 'recording' ? `Recording (${recordDuration}s)` : 'Ready')}
                 </span>
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <span>Push-to-Talk (Click Speak or Press Space)</span>
-                <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>• Whisper V3 Turbo</span>
-                <span style={{ color: '#818cf8', fontWeight: 700 }}>• 🧠 {llmProviderLabel}</span>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 3 }}>
+                Push-to-talk speech recognition • Press Spacebar or click Speak
               </div>
             </div>
           </div>
@@ -873,8 +1142,9 @@ export function VoicePOSModal({
               ))}
             </div>
 
-            {/* Mute TTS button */}
+            {/* Audio chimes mute toggle */}
             <button
+              type="button"
               className="btn btn-secondary btn-sm"
               onClick={() => {
                 const nextMuted = !isMuted
@@ -882,9 +1152,29 @@ export function VoicePOSModal({
                 speechSynthesizer.setMuted(nextMuted)
               }}
               style={{ padding: '6px 10px' }}
-              title={isMuted ? 'Unmute voice feedback' : 'Mute voice feedback'}
+              title={isMuted ? 'Unmute audio chimes' : 'Mute audio chimes'}
             >
               {isMuted ? <VolumeX size={14} style={{ color: 'var(--color-danger)' }} /> : <Volume2 size={14} style={{ color: 'var(--color-primary)' }} />}
+            </button>
+
+            {/* Minimize back to Floating Capsule */}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setIsCompactMode(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5
+              }}
+              title="Minimize back to Floating Capsule at bottom"
+            >
+              <Minimize2 size={13} />
+              <span>Capsule</span>
             </button>
 
             <button className="modal-close" onClick={onClose}>
@@ -895,8 +1185,8 @@ export function VoicePOSModal({
 
         {/* PRIMARY VOICE CONTROLLER & EQUALIZER BAR */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.85)',
-          padding: '12px 20px',
+          background: 'var(--color-surface)',
+          padding: '12px 22px',
           borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
@@ -904,15 +1194,15 @@ export function VoicePOSModal({
           gap: 16
         }}>
           {/* Big Speak/Stop Button with Keyboard Prompt */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {recordState === 'recording' ? (
               <button
                 type="button"
                 className="btn btn-danger btn-sm"
                 onClick={stopRecordingAndTranscribe}
-                style={{ fontWeight: 800, padding: '10px 18px', gap: 8, fontSize: '0.875rem', animation: 'pulse 1.5s infinite' }}
+                style={{ fontWeight: 700, padding: '8px 18px', gap: 8, fontSize: '0.8125rem' }}
               >
-                <Square size={16} /> 🔴 Stop &amp; Transcribe (Space)
+                <Square size={14} fill="currentColor" /> Stop &amp; Transcribe (Space)
               </button>
             ) : (
               <button
@@ -920,17 +1210,17 @@ export function VoicePOSModal({
                 className="btn btn-primary btn-sm"
                 onClick={startRecording}
                 disabled={recordState === 'transcribing'}
-                style={{ fontWeight: 800, padding: '10px 18px', gap: 8, fontSize: '0.875rem' }}
+                style={{ fontWeight: 700, padding: '8px 18px', gap: 8, fontSize: '0.8125rem' }}
               >
-                <Mic size={16} /> 🎙️ Click to Speak (Space)
+                <Mic size={15} /> Start Speaking (Space)
               </button>
             )}
 
-            {/* Dynamic Audio Visualizer Equalizer */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: 22, width: 110 }}>
-                {[0.3, 0.6, 1.0, 0.8, 1.3, 0.7, 1.1, 1.2, 0.5, 0.9].map((multiplier, idx) => {
-                  const barHeight = Math.max(3, Math.min(22, Math.round((audioLevel / 100) * 22 * multiplier)))
+            {/* Dynamic Symmetrical Audio Waveform Visualizer */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 8, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', gap: 2.5, alignItems: 'center', height: 20, width: 104 }}>
+                {WAVE_MULTIPLIERS.map((multiplier, idx) => {
+                  const barHeight = Math.max(3, Math.min(20, Math.round((audioLevel / 100) * 20 * multiplier)))
                   return (
                     <div
                       key={idx}
@@ -938,19 +1228,23 @@ export function VoicePOSModal({
                         flex: 1,
                         height: barHeight,
                         background: recordState === 'recording'
-                          ? '#ef4444'
-                          : (audioLevel > 5 ? (audioLevel > 40 ? 'linear-gradient(to top, #10B981, #F59E0B)' : '#10B981') : 'rgba(255,255,255,0.15)'),
-                        borderRadius: 2,
+                          ? 'linear-gradient(to top, #ef4444, #f87171)'
+                          : (audioLevel > 5 ? 'linear-gradient(to top, #10B981, #6366F1)' : 'rgba(255,255,255,0.12)'),
+                        borderRadius: 1.5,
                         transition: 'height 0.08s ease'
                       }}
                     />
                   )
                 })}
               </div>
-              <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: audioLevel > 5 ? '#10B981' : 'var(--color-text-muted)' }}>
+              <span style={{ fontSize: '0.6875rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: audioLevel > 5 ? 'var(--color-primary)' : 'var(--color-text-muted)', minWidth: 26, textAlign: 'right' }}>
                 {audioLevel}%
               </span>
             </div>
+          </div>
+
+          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+            Speak item names, SKU numbers, quantities, or prices
           </div>
         </div>
 
@@ -989,25 +1283,60 @@ export function VoicePOSModal({
             {/* Messages Feed */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {messages.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '30px 20px', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 24, background: 'rgba(16,185,129,0.1)', color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                    <Sparkles size={24} />
+                <div style={{ textAlign: 'center', padding: '28px 20px', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 22, background: 'rgba(16,185,129,0.1)', color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                    <Mic size={20} />
                   </div>
-                  <div style={{ fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>Click to Speak Voice Agent</div>
-                  <div>Click <strong>Click to Speak</strong> (or press <strong>Spacebar</strong>) to record:</div>
-                  <div style={{ fontSize: '0.75rem', marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4, color: 'var(--color-text-secondary)' }}>
-                    <div>• <strong>Full Bill 1-Shot:</strong> <em>"3 Zellbury krdo with price 7000 and customer name is Hamza"</em></div>
-                    <div>• <strong>Ask Stock / Price:</strong> <em>"Yeh item kitni available hai?"</em> or <em>"SKU 101 ka stock kitna hai?"</em></div>
-                    <div>• <strong>Modify by Row / Item #:</strong> <em>"Item no 1 ki price 1800 kardo"</em>, <em>"Item no 1 mai 1 aur add krdo"</em>, <em>"Item no 1 ko delete krdo"</em></div>
-                    <div>• <strong>Add by SKU / Code:</strong> <em>"2 SKU 101 2500 mein add kardo"</em> (defaults to Walk-in customer)</div>
-                    <div>• <strong>Remove &amp; Pay:</strong> <em>"Item no 1 nikal do"</em>, <em>"Paid cash"</em>, <em>"Proceed"</em></div>
+                  <div style={{ fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>Speech Recognition Ready</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>Click <strong>Start Speaking</strong> or press <strong>Spacebar</strong> to issue voice commands:</div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 16, textAlign: 'left' }}>
+                    <button
+                      type="button"
+                      onClick={() => processTranscript("3 Zellbury with price 7000 and customer name Hamza")}
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '8px 10px', fontSize: '0.75rem', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)' }}
+                    >
+                      <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '0.6875rem' }}>Full Bill 1-Shot</div>
+                      <div style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>"3 Zellbury price 7000 customer Hamza"</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => processTranscript("Yeh item kitni available hai?")}
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '8px 10px', fontSize: '0.75rem', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)' }}
+                    >
+                      <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '0.6875rem' }}>Stock Inquiry</div>
+                      <div style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>"Yeh item kitni available hai?"</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => processTranscript("2 SKU 101 2500 mein add kardo")}
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '8px 10px', fontSize: '0.75rem', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)' }}
+                    >
+                      <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '0.6875rem' }}>Add by SKU</div>
+                      <div style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>"2 SKU 101 2500 mein add kardo"</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => processTranscript("Proceed")}
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '8px 10px', fontSize: '0.75rem', cursor: 'pointer', textAlign: 'left', color: 'var(--color-text)' }}
+                    >
+                      <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: '0.6875rem' }}>Checkout &amp; Finalize</div>
+                      <div style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>"Paid cash", "Proceed"</div>
+                    </button>
                   </div>
                 </div>
               )}
 
               {messages.map(msg => {
-                const isExpanded = !!expandedJsonMsgIds[msg.id]
                 const llmMeta = msg.parsed?.llm_meta
+                const matchConfidence = msg.parsed
+                  ? ((msg.parsed.confidence && msg.parsed.confidence <= 1)
+                    ? Math.round(msg.parsed.confidence * 100)
+                    : (msg.parsed.confidence ?? (msg.parsed.intent !== 'UNKNOWN' ? 98 : 45)))
+                  : null
 
                 return (
                   <div
@@ -1026,28 +1355,30 @@ export function VoicePOSModal({
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
-                      <div style={{ fontSize: '0.6875rem', opacity: 0.8, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        {msg.sender === 'user' ? '👤 Spoken Command' : '🤖 AI POS Agent'}
+                      <div style={{ fontSize: '0.6875rem', opacity: msg.sender === 'user' ? 0.85 : 0.7, fontWeight: 700 }}>
+                        {msg.sender === 'user' ? 'Spoken Command' : 'Voice Assistant'}
                       </div>
 
-                      {/* AI Intelligence Provider Badge */}
                       {msg.sender === 'assistant' && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          {llmMeta ? (
-                            <span style={{
-                              fontSize: '0.625rem', fontWeight: 800, padding: '1px 6px', borderRadius: 6,
-                              background: llmMeta.isFallback ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                              color: llmMeta.isFallback ? '#f59e0b' : 'var(--color-primary)',
-                              border: `1px solid ${llmMeta.isFallback ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`
-                            }}>
-                              ⚡ {llmMeta.provider.toUpperCase()} {llmMeta.latencyMs ? `(${llmMeta.latencyMs}ms)` : ''}
-                            </span>
-                          ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {/* Confidence Score Pill */}
+                          {matchConfidence !== null && (
                             <span style={{
                               fontSize: '0.625rem', fontWeight: 700, padding: '1px 6px', borderRadius: 6,
+                              background: matchConfidence >= 90 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                              color: matchConfidence >= 90 ? 'var(--color-primary)' : '#f59e0b',
+                              border: `1px solid ${matchConfidence >= 90 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`
+                            }}>
+                              {matchConfidence}% match
+                            </span>
+                          )}
+
+                          {llmMeta && (
+                            <span style={{
+                              fontSize: '0.625rem', fontWeight: 600, padding: '1px 6px', borderRadius: 6,
                               background: 'var(--color-surface)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)'
                             }}>
-                              ⚙️ Local Rule Engine
+                              {llmMeta.latencyMs ? `${llmMeta.latencyMs}ms` : 'Matched'}
                             </span>
                           )}
                         </div>
@@ -1055,56 +1386,28 @@ export function VoicePOSModal({
                     </div>
 
                     <div>{msg.text}</div>
-
-                    {/* LLM JSON Action Inspector */}
-                    {llmMeta?.raw_json && (
-                      <div style={{ marginTop: 6 }}>
-                        <button
-                          type="button"
-                          onClick={() => setExpandedJsonMsgIds(prev => ({ ...prev, [msg.id]: !prev[msg.id] }))}
-                          style={{
-                            background: 'transparent', border: 'none', padding: 0,
-                            fontSize: '0.6875rem', color: '#818cf8', fontWeight: 700, cursor: 'pointer',
-                            display: 'inline-flex', alignItems: 'center', gap: 4
-                          }}
-                        >
-                          <Sparkles size={11} />
-                          <span>{isExpanded ? '▲ Hide AI Stock JSON Action' : '▼ View AI Stock JSON Action'}</span>
-                        </button>
-
-                        {isExpanded && (
-                          <pre style={{
-                            background: '#090d16', color: '#38bdf8', padding: 8, borderRadius: 6,
-                            marginTop: 4, fontSize: '0.6875rem', fontFamily: 'var(--font-mono)',
-                            overflowX: 'auto', border: '1px solid rgba(99, 102, 241, 0.3)', maxHeight: 160
-                          }}>
-                            {JSON.stringify(llmMeta.raw_json, null, 2)}
-                          </pre>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )
               })}
 
-              {/* Live AI Reasoning Thinking Bubble */}
+              {/* Live Reasoning Thinking Bubble */}
               {recordState === 'transcribing' && (
                 <div style={{
                   alignSelf: 'flex-start',
                   maxWidth: '85%',
-                  background: 'rgba(99, 102, 241, 0.15)',
-                  border: '1px solid rgba(99, 102, 241, 0.35)',
-                  borderRadius: '14px 14px 14px 2px',
+                  background: 'rgba(99, 102, 241, 0.12)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  borderRadius: '12px 12px 12px 2px',
                   padding: '10px 14px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 10,
                   fontSize: '0.8125rem',
                   color: '#818cf8',
                   animation: 'pulse 1.2s infinite ease-in-out'
                 }}>
                   <Sparkles size={14} className="animate-spin" />
-                  <span>🧠 AI Analyzing with Live Stock &amp; Cart Context ({llmProviderLabel})...</span>
+                  <span>Analyzing speech with live catalog context...</span>
                 </div>
               )}
 
@@ -1132,8 +1435,8 @@ export function VoicePOSModal({
                   background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.35)',
                   borderRadius: 12, padding: 14, marginTop: 6
                 }}>
-                  <div style={{ fontWeight: 800, fontSize: '0.8125rem', color: '#818cf8', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Sparkles size={14} /> Disambiguation: Select {context.pendingDisambiguation.type === 'product' ? 'Product' : 'Customer'}
+                  <div style={{ fontWeight: 700, fontSize: '0.8125rem', color: '#818cf8', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Sparkles size={14} /> Select {context.pendingDisambiguation.type === 'product' ? 'Product' : 'Customer'}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {context.pendingDisambiguation.options.map(opt => (
@@ -1182,8 +1485,8 @@ export function VoicePOSModal({
             background: 'var(--color-surface-2)', padding: 18, overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontWeight: 800, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-primary)' }}>
-                📋 Live Voice Invoice Review
+              <div style={{ fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-primary)' }}>
+                Live Invoice Review
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                 {currentCart.reduce((s, i) => s + i.qty, 0)} items
@@ -1197,7 +1500,7 @@ export function VoicePOSModal({
             }}>
               <User size={16} style={{ color: 'var(--color-primary)' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Customer</div>
+                <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-muted)' }}>Customer</div>
                 <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>
                   {currentCustomer ? currentCustomer.name : 'Walk-in Customer'}
                 </div>
@@ -1209,24 +1512,25 @@ export function VoicePOSModal({
               ) : null}
             </div>
 
-            {/* Items Table */}
+            {/* Items Table with Inline Stepper & Row Remove */}
             <div style={{
               flex: 1, background: 'var(--color-surface)', borderRadius: 10,
-              border: '1px solid var(--color-border)', overflowY: 'auto', marginBottom: 12, maxHeight: 200
+              border: '1px solid var(--color-border)', overflowY: 'auto', marginBottom: 12, maxHeight: 220
             }}>
               {currentCart.length === 0 ? (
-                <div style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>
-                  🛒 Cart is empty. Click Speak to add items by SKU.
+                <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>
+                  Cart is empty. Speak or type to add items.
                 </div>
               ) : (
                 <table className="data-table" style={{ fontSize: '0.75rem' }}>
                   <thead>
                     <tr>
-                      <th style={{ width: 44, textAlign: 'center' }}>Sr #</th>
+                      <th style={{ width: 34, textAlign: 'center' }}>#</th>
                       <th>Product / SKU</th>
-                      <th style={{ textAlign: 'center' }}>Qty</th>
+                      <th style={{ textAlign: 'center', width: 78 }}>Qty</th>
                       <th style={{ textAlign: 'right' }}>Price</th>
                       <th style={{ textAlign: 'right' }}>Total</th>
+                      <th style={{ width: 26 }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1234,11 +1538,11 @@ export function VoicePOSModal({
                       <tr key={c.id}>
                         <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                           <span style={{
-                            fontSize: '0.6875rem', fontWeight: 800, padding: '2px 6px',
+                            fontSize: '0.6875rem', fontWeight: 800, padding: '2px 5px',
                             borderRadius: 6, background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)',
                             color: 'var(--color-primary)', display: 'inline-block'
                           }}>
-                            #{idx + 1}
+                            {idx + 1}
                           </span>
                         </td>
                         <td>
@@ -1249,10 +1553,61 @@ export function VoicePOSModal({
                             </div>
                           ) : null}
                         </td>
-                        <td style={{ textAlign: 'center', fontWeight: 700 }}>{c.qty}</td>
+                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                          <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 3,
+                            background: 'var(--color-surface-2)', borderRadius: 6,
+                            padding: '2px 4px', border: '1px solid var(--color-border)'
+                          }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (c.qty > 1) onUpdateQty(c.id, c.qty - 1)
+                                else onRemoveFromCart(c.id)
+                              }}
+                              style={{
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                padding: '0 2px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center'
+                              }}
+                              title="Decrease qty"
+                            >
+                              <Minus size={11} />
+                            </button>
+                            <span style={{ minWidth: 16, textAlign: 'center', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                              {c.qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => onUpdateQty(c.id, c.qty + 1)}
+                              style={{
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                padding: '0 2px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center'
+                              }}
+                              title="Increase qty"
+                            >
+                              <Plus size={11} />
+                            </button>
+                          </div>
+                        </td>
                         <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>Rs. {c.unit_price}</td>
                         <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-primary)' }}>
                           Rs. {c.line_total}
+                        </td>
+                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                          <button
+                            type="button"
+                            onClick={() => onRemoveFromCart(c.id)}
+                            style={{
+                              border: 'none', background: 'transparent', cursor: 'pointer',
+                              color: 'var(--color-text-muted)', padding: '2px 4px', display: 'flex', alignItems: 'center',
+                              borderRadius: 4
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-danger)')}
+                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+                            title="Remove item"
+                          >
+                            <Trash2 size={12} />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1277,8 +1632,8 @@ export function VoicePOSModal({
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', paddingTop: 6, marginTop: 2 }}>
-                <span style={{ fontWeight: 800 }}>Grand Total:</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1rem', color: 'var(--color-primary)' }}>
+                <span style={{ fontWeight: 700 }}>Grand Total:</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.0625rem', color: 'var(--color-primary)' }}>
                   Rs. {grandTotal.toLocaleString()}
                 </span>
               </div>
@@ -1293,6 +1648,7 @@ export function VoicePOSModal({
             {/* Voice Confirmation Gate Actions */}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <button
+                type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={onClose}
                 style={{ flex: 1, padding: '10px 0', fontSize: '0.75rem' }}
@@ -1300,6 +1656,7 @@ export function VoicePOSModal({
                 Cancel (Esc)
               </button>
               <button
+                type="button"
                 className="btn btn-primary"
                 onClick={async () => {
                   if (currentCart.length === 0) {
@@ -1312,9 +1669,9 @@ export function VoicePOSModal({
                   if (ok) onClose()
                 }}
                 disabled={isCommitting || currentCart.length === 0}
-                style={{ flex: 2, padding: '10px 0', fontWeight: 800, fontSize: '0.875rem' }}
+                style={{ flex: 2, padding: '10px 0', fontWeight: 700, fontSize: '0.875rem' }}
               >
-                {isCommitting ? 'Completing...' : '✅ PROCEED (Say "Proceed")'}
+                {isCommitting ? 'Completing...' : 'Complete Sale (Say "Proceed")'}
               </button>
             </div>
           </div>

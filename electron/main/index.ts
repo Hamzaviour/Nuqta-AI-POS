@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, dialog, session, systemPreferences } from 'electron'
+import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { join } from 'path'
 import path from 'path'
 import fs from 'fs'
@@ -36,7 +37,8 @@ import {
   getCustomerStatement, getSupplierStatement, restoreDatabaseFromFile,
   getAgingReport, bulkImportItems, getAuditLogs, getLowStockItems,
   createExpense, getExpenseById, getExpenses, deleteExpense, getTodayPOSSummary,
-  BulkImportItemInput, getItemSalesPerformance, getFinancialAnalytics
+  BulkImportItemInput, getItemSalesPerformance, getFinancialAnalytics,
+  runDemoSeed
 } from '../database/db'
 import { startMobileServer, stopMobileServer, getMobileServerInfo } from './mobileServer'
 import {
@@ -718,6 +720,21 @@ function registerIpcHandlers(): void {
       logAction(requestingUserId, 'BACKUP', 'system', null, { path: filePath })
       return { success: true, path: filePath }
     } catch (err) {
+      return { success: false, error: String(err) }
+    }
+  })
+
+  ipcMain.handle('maintenance:seed-demo-data', async (_, requestingUserId: string, mode?: 'if_empty' | 'force') => {
+    const requester = getUserById(requestingUserId)
+    if (!requester || !requester.perm_access_maintenance) {
+      return { success: false, error: 'Access denied. Maintenance is Owner-only.' }
+    }
+    try {
+      const result = runDemoSeed(mode || 'force')
+      logAction(requestingUserId, 'SEED_DEMO_DATA', 'system', null, result)
+      return { success: true, data: result }
+    } catch (err) {
+      console.error('[maintenance:seed-demo-data] error:', err)
       return { success: false, error: String(err) }
     }
   })

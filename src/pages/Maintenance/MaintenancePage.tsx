@@ -2623,6 +2623,8 @@ function ReindexTab() {
   const { currentUser } = useAuth()
   const [running, setRunning] = useState(false)
   const [result, setResult]   = useState<{ fixed: number; message: string } | null>(null)
+  const [seeding, setSeeding] = useState(false)
+  const [seedResult, setSeedResult] = useState<{ message?: string; stats?: any } | null>(null)
 
   const handleReindex = async () => {
     setRunning(true)
@@ -2637,14 +2639,59 @@ function ReindexTab() {
     setRunning(false)
   }
 
+  const handleSeedDemo = async (mode: 'if_empty' | 'force') => {
+    setSeeding(true)
+    setSeedResult(null)
+    try {
+      const res = await window.api.seedDemoData(currentUser!.id, mode)
+      if (res.success && res.data) {
+        setSeedResult(res.data)
+        toast.success('Demo sample dataset populated successfully!')
+      } else {
+        toast.error(res.error || 'Failed to populate demo data')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error populating demo data')
+    } finally {
+      setSeeding(false)
+    }
+  }
+
   return (
-    <div className="page-body" style={{ maxWidth: 500 }}>
+    <div className="page-body" style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Demo / Sample Data card */}
+      <div className="card">
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Sparkles size={16} style={{ color: 'var(--color-primary)' }} />
+          <span className="card-title">Demo & Showcase Dataset (Sample Data)</span>
+        </div>
+        <div className="card-body">
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+            Populate realistic retail apparel products with standard barcodes, customer profiles, textile suppliers, 75+ sales invoices across the last 30 days, operational expenses, and past day-closings. Ideal for software demonstrations and showcase videos.
+          </p>
+          {seedResult && (
+            <div style={{ padding: 14, background: 'var(--color-success-bg)', borderRadius: 10, border: '1px solid #86EFAC', marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, color: 'var(--color-success)' }}>✅ Demo Dataset Loaded</div>
+              <div style={{ fontSize: '0.875rem', marginTop: 4 }}>{seedResult.message}</div>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={() => handleSeedDemo('force')} disabled={seeding}>
+              {seeding
+                ? <><Loader2 size={16} className="animate-spin" /> Populating Data...</>
+                : <><Sparkles size={16} /> Load Full Demo Dataset</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Reindex card */}
       <div className="card">
         <div className="card-header"><RefreshCw size={16} style={{ color: 'var(--color-primary)' }} /><span className="card-title">Data Reindex (5-3 Index)</span></div>
         <div className="card-body">
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: 20 }}>
             Recalculates all stock quantities from the full transaction history.
-{/* ... */}
             Use this if you notice any discrepancies in stock quantities or totals.
           </p>
           {result && (
@@ -2653,7 +2700,7 @@ function ReindexTab() {
               <div style={{ fontSize: '0.875rem', marginTop: 4 }}>{result.message}</div>
             </div>
           )}
-          <button className="btn btn-primary btn-lg" onClick={handleReindex} disabled={running}>
+          <button className="btn btn-secondary btn-lg" onClick={handleReindex} disabled={running}>
             {running
               ? <><span className="animate-spin" style={{ display: 'inline-block' }}>⟳</span> Running...</>
               : <><RefreshCw size={16} /> Run Reindex Now</>

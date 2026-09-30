@@ -4,6 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import crypto from 'crypto'
+import { seedDemoData } from './seedDemoData'
 
 export class DatabaseWrapper {
   private db: SqlJsDatabase
@@ -329,6 +330,13 @@ export async function initDatabase(): Promise<DatabaseWrapper> {
 
   // Seed default owner if no users exist
   seedDefaultUsers(dbInstance)
+
+  // Seed demo dataset for presentation / demo video if empty
+  try {
+    seedDemoData(dbInstance, 'if_empty')
+  } catch (seedErr) {
+    console.warn('[DB] Auto demo seed note:', seedErr)
+  }
 
   console.log('[DB] Database initialized successfully with sql.js')
   return dbInstance
@@ -678,7 +686,7 @@ function getInlineSchema(): string {
       ('receipt_printer',    '80mm'),
       ('discount_limit_sp',  '10'),
       ('discount_limit_mgr', '20'),
-      ('invoice_prefix',     'AD'),
+      ('invoice_prefix',     'INV'),
       ('purchase_prefix',    'PO'),
       ('return_prefix',      'RET'),
       ('db_version',         '1');
@@ -799,6 +807,10 @@ export function closeDatabase(): void {
     dbInstance.close()
     dbInstance = null
   }
+}
+
+export function runDemoSeed(mode: 'if_empty' | 'force' = 'force') {
+  return seedDemoData(getDB(), mode)
 }
 
 // ---------------------------------------------------------------

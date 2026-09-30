@@ -572,6 +572,7 @@ export interface ElectronAPI {
   reindexData: (requestingUserId: string) => Promise<{ success: boolean; data?: { fixed: number; message: string }; error?: string }>
   backupDatabase: (requestingUserId: string) => Promise<{ success: boolean; path?: string; error?: string }>
   restoreDatabase: (requestingUserId: string) => Promise<{ success: boolean; message?: string; error?: string }>
+  seedDemoData: (requestingUserId: string, mode?: 'if_empty' | 'force') => Promise<{ success: boolean; message?: string; data?: any; error?: string }>
   updateInvoiceStatus: (requestingUserId: string, invoiceId: string, status: string, trackingNumber?: string) => Promise<{ success: boolean; error?: string }>
   getOnlineOrders: (statusFilter?: string) => Promise<Invoice[]>
   createReturn: (requestingUserId: string, data: object) => Promise<{ success: boolean; data?: Return; error?: string }>
