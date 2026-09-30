@@ -1,5 +1,5 @@
 -- ============================================================
--- Al-Deewan POS System - SQLite Database Schema
+-- POS System - SQLite Database Schema
 -- Version: 1.0.0
 -- ============================================================
 
@@ -402,17 +402,17 @@ INSERT OR IGNORE INTO accounts VALUES
 
 -- Default system settings
 INSERT OR IGNORE INTO settings VALUES
-  ('company_name',       'Al-Deewan Brand'),
+  ('company_name',       'My Store'),
   ('company_address',    'Lahore, Pakistan'),
   ('company_phone',      ''),
   ('currency',           'PKR'),
   ('currency_symbol',    'Rs.'),
-  ('receipt_footer',     'Thank you for shopping at Al-Deewan Brand!'),
+  ('receipt_footer',     'Thank you for your purchase!'),
   ('tax_rate',           '0'),
   ('receipt_printer',    '80mm'),
   ('discount_limit_sp',  '10'),
   ('discount_limit_mgr', '20'),
-  ('invoice_prefix',     'AD'),
+  ('invoice_prefix',     'INV'),
   ('purchase_prefix',    'PO'),
   ('return_prefix',      'RET'),
   ('db_version',         '1');

@@ -1,5 +1,5 @@
 /**
- * Al-Deewan Multi-Terminal Network Sync Adapter
+ * Multi-Terminal Network Sync Adapter
  * Seamlessly routes IPC vs LAN RPC calls depending on whether this system
  * is configured as Master Node (Main Windows PC) or Satellite Client (Win / Mac)
  */

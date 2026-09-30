@@ -19,18 +19,18 @@ const CAMPAIGN_TEMPLATES = [
     badge: 'Festive',
     text: `🌙 *Assalam-o-Alaikum {customer_name}!*
 
-*Al-Deewan Brand* wishes you and your family a blessed and joyous *Eid Mubarak*! ✨
+*{store_name}* wishes you and your family a blessed and joyous *Eid Mubarak*! ✨
 
 May this festive occasion bring peace, prosperity, and happiness to your home. We look forward to serving you with our finest festive clothing collections.
 
-📍 *Al-Deewan Brand* — Lahore, Pakistan
+📍 *{store_name}*
 📞 Contact / WhatsApp: {whatsapp_hotline}`
   },
   {
     id: 'sale',
     title: '🔥 Mega Clearance & Seasonal Sale (Up to 50% Off)',
     badge: 'Promotion',
-    text: `🔥 *MEGA SALE ALERT — AL-DEEWAN BRAND!* 🔥
+    text: `🔥 *MEGA SALE ALERT — {store_name}!* 🔥
 
 Dear *{customer_name}*,
 
@@ -39,14 +39,14 @@ Exclusive discounts on unstitched, ready-to-wear, and festive wear.
 
 ⚡ *Limited Time Offer!* Visit our outlet or place your order directly on WhatsApp before stock runs out!
 
-📍 *Al-Deewan Brand* — Lahore
+📍 *{store_name}*
 📞 WhatsApp: {whatsapp_hotline}`
   },
   {
     id: 'new_arrival',
     title: '✨ New Arrivals & Summer/Winter Fresh Collection',
     badge: 'New Stock',
-    text: `✨ *FRESH ARRIVALS AT AL-DEEWAN BRAND!* ✨
+    text: `✨ *FRESH ARRIVALS — {store_name}!* ✨
 
 Assalam-o-Alaikum *{customer_name}*,
 
@@ -57,7 +57,7 @@ Our brand new designer clothing collection has just arrived!
 
 Visit us today or reply to this message to see the complete digital catalog!
 
-📍 *Al-Deewan Brand* — Lahore
+📍 *{store_name}*
 📞 WhatsApp: {whatsapp_hotline}`
   },
   {
@@ -66,11 +66,11 @@ Visit us today or reply to this message to see the complete digital catalog!
     badge: 'Loyalty',
     text: `⭐ *Exclusive VIP Treat for {customer_name}!* ⭐
 
-As one of our most valued customers at *Al-Deewan Brand*, we are giving you an exclusive *Extra 10% Discount* on your next purchase!
+As one of our most valued customers at *{store_name}*, we are giving you an exclusive *Extra 10% Discount* on your next purchase!
 
 Show this message at the checkout counter or send us your order on WhatsApp.
 
-📍 *Al-Deewan Brand*
+📍 *{store_name}*
 📞 WhatsApp: {whatsapp_hotline}`
   },
   {
@@ -79,13 +79,13 @@ Show this message at the checkout counter or send us your order on WhatsApp.
     badge: 'Accounts',
     text: `Dear *{customer_name}*,
 
-Assalam-o-Alaikum. This is a gentle reminder from *Al-Deewan Brand* regarding your outstanding account balance of *Rs. {balance}*.
+Assalam-o-Alaikum. This is a gentle reminder from *{store_name}* regarding your outstanding account balance of *Rs. {balance}*.
 
 Kindly arrange the payment at your earliest convenience. If you have already cleared this, please share the transaction receipt with us.
 
 Thank you for your valued partnership!
 
-📍 *Al-Deewan Brand Accounts*
+📍 *{store_name} Accounts*
 📞 WhatsApp: {whatsapp_hotline}`
   },
   {
@@ -94,11 +94,11 @@ Thank you for your valued partnership!
     badge: 'Custom',
     text: `Assalam-o-Alaikum *{customer_name}*,
 
-We have an exciting update for you from *Al-Deewan Brand*!
+We have an exciting update for you from *{store_name}*!
 
 Feel free to visit our store or contact us on WhatsApp for any inquiries.
 
-📍 *Al-Deewan Brand*
+📍 *{store_name}*
 📞 WhatsApp: {whatsapp_hotline}`
   }
 ]
@@ -171,7 +171,7 @@ export default function CustomersPage() {
 
   // WhatsApp Message Generator Helper
   const generateMessageForCustomer = (template: string, customer: Customer) => {
-    const storeName = storeSettings['company_name'] || 'Al-Deewan Brand'
+    const storeName = storeSettings['company_name'] || 'My Store'
     const hotline = storeSettings['whatsapp_number'] || storeSettings['company_phone'] || '+92 300 1234567'
 
     return template
@@ -252,7 +252,7 @@ export default function CustomersPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `aldeewan-customers-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `pos-customers-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
     toast.success('Customer CSV exported successfully!')

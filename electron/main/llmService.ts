@@ -124,7 +124,7 @@ function sendChatCompletionRequest(
           'Authorization': `Bearer ${apiKey || 'any'}`,
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData),
-          'User-Agent': 'Al-Deewan-POS-LLM-Engine/1.0'
+          'User-Agent': 'POS-LLM-Engine/1.0'
         },
         timeout: 15000
       }
@@ -210,7 +210,7 @@ export async function checkOmniRouteServer(
         path: parsedUrl.pathname + (parsedUrl.search || ''),
         headers: {
           'Authorization': 'Bearer any',
-          'User-Agent': 'Al-Deewan-POS-LLM-Engine/1.0'
+          'User-Agent': 'POS-LLM-Engine/1.0'
         },
         timeout: 3000
       }
@@ -404,7 +404,7 @@ export async function processVoiceCommandWithLLM(
       balance: cu.current_balance || 0
     }))
 
-    const systemPrompt = `You are the AI Intelligence Engine for Al-Deewan POS System (a clothing & retail shop in Pakistan).
+    const systemPrompt = `You are the AI Intelligence Engine for a POS System (a clothing & retail shop in Pakistan).
 The cashier/owner speaks or types commands in English, Urdu (اردو), or Roman Urdu (e.g. "2 SKU 101 add kardo", "101 ki price 1800 kardo", "Ali customer banao 03001234567", "Proceed").
 
 Your job:

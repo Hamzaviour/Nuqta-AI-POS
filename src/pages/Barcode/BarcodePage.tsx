@@ -249,7 +249,7 @@ export default function BarcodePage() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {[
-                      { key: 'show_brand', label: 'Show Brand Title (Al-Deewan)' },
+                      { key: 'show_brand', label: 'Show Brand Title' },
                       { key: 'show_price', label: 'Show Retail Price' },
                       { key: 'show_size', label: 'Show Size Variant' },
                       { key: 'show_barcode_text', label: 'Show SKU Under Barcode' },
@@ -353,7 +353,7 @@ function SingleLabelPreview({ item, config }: { item: Item; config: BarcodeLabel
           fontSize: '0.625rem', fontWeight: 800, textAlign: 'center',
           letterSpacing: '0.5px', textTransform: 'uppercase', color: '#000'
         }}>
-          AL-DEEWAN
+          MY STORE
         </div>
       )}
 
@@ -416,7 +416,7 @@ function SingleLabelPrint({ item, config }: { item: Item; config: BarcodeLabelCo
     }}>
       {config.show_brand && (
         <div style={{ fontSize: '7pt', fontWeight: 900, textAlign: 'center', textTransform: 'uppercase' }}>
-          AL-DEEWAN
+          MY STORE
         </div>
       )}
       <div style={{

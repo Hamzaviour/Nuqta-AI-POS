@@ -26,7 +26,7 @@ export function startMasterDiscoveryBeacon(serverPort: number = 8080): void {
             app: 'al-deewan-pos-master',
             port: serverPort,
             ips: localIps,
-            name: 'Al-Deewan Master Terminal 1',
+            name: 'Master Terminal 1',
             timestamp: Date.now()
           })
         )
@@ -97,7 +97,7 @@ export function scanForMasterServer(timeoutMs: number = 3000): Promise<Discovere
                 ip: rinfo.address,
                 port: data.port || 8080,
                 url: masterUrl,
-                name: data.name || 'Al-Deewan Master Server',
+                name: data.name || 'Master Server',
                 latencyMs: 1
               })
             }
@@ -140,7 +140,7 @@ export function scanForMasterServer(timeoutMs: number = 3000): Promise<Discovere
                           ip: targetIp,
                           port: 8080,
                           url,
-                          name: data.name || 'Al-Deewan Master Server',
+                          name: data.name || 'Master Server',
                           latencyMs: Date.now() - reqStart
                         })
                       }

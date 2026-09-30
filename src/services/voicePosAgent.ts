@@ -1,5 +1,5 @@
 /**
- * AI-Deewan POS — Production-Grade Voice POS Agent
+ * POS System — Production-Grade Voice POS Agent
  * 
  * Multi-Language Natural Language Understanding (English, Roman Urdu, & Urdu Script),
  * Robust Phonetic & Fuzzy Product Matching, Conversational Context Memory,

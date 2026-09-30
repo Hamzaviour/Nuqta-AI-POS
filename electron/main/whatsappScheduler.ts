@@ -95,7 +95,7 @@ export function formatDayCloseWhatsAppMessage(dateStr?: string): { message: stri
   const cleanPhone = (config.ownerPhone || '').replace(/[^\d]/g, '')
 
   const lines = [
-    `📊 *AL-DEEWAN POS — DAILY CLOSING REPORT*`,
+    `📊 *POS SYSTEM — DAILY CLOSING REPORT*`,
     `🏪 *Branch:* Main Wholesale Outlet`,
     `📅 *Date:* ${formattedDate} (${nowTime})`,
     `🔒 *Status:* ${isClosed ? '✅ Closed & Locked' : '⏳ Open / Provisional'}`,
@@ -119,7 +119,7 @@ export function formatDayCloseWhatsAppMessage(dateStr?: string): { message: stri
     `🏦 *DRAWER RECONCILIATION*`,
     `🎯 Expected Drawer Cash: ${fmtCurrency(calc.expected_cash)}`,
     `━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `_Generated automatically by Al-Deewan POS System_`
+    `_Generated automatically by POS System_`
   ].filter(Boolean)
 
   const message = lines.join('\n')

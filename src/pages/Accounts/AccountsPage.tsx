@@ -1038,7 +1038,7 @@ function ProfitAndLossView() {
       ) : report ? (
         <div className="card">
           <div className="card-header" style={{ textAlign: 'center', display: 'block', padding: '16px' }}>
-            <h3 style={{ margin: 0, fontWeight: 800 }}>AL-DEEWAN BRAND</h3>
+            <h3 style={{ margin: 0, fontWeight: 800 }}>MY STORE</h3>
             <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>
               Trading, Profit & Loss Statement ({report.from_date} to {report.to_date})
             </div>
@@ -1255,9 +1255,9 @@ function PartyStatementsView() {
             <div style={{ padding: 24, borderBottom: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h2 style={{ margin: 0, fontWeight: 900, color: 'var(--color-primary)' }}>AL-DEEWAN BRAND</h2>
+                  <h2 style={{ margin: 0, fontWeight: 900, color: 'var(--color-primary)' }}>MY STORE</h2>
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
-                    Wholesale Clothing · Lahore, Pakistan
+                    Wholesale & Retail
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>

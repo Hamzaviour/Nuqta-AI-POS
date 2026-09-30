@@ -1303,7 +1303,7 @@ function SystemSetupTab() {
               <span style={{ fontSize: '0.6875rem', color: '#888', marginTop: 8 }}>
                 {settings['receipt_qr_image'] === 'none'
                   ? '✕ QR Code Disabled'
-                  : (settings['receipt_qr_image'] ? '✓ Custom QR Code Active' : '✓ Default Al-Deewan WhatsApp Community QR')}
+                  : (settings['receipt_qr_image'] ? '✓ Custom QR Code Active' : '✓ Default WhatsApp Community QR')}
               </span>
             </div>
 
@@ -1313,7 +1313,7 @@ function SystemSetupTab() {
                 Printed Customer Receipt QR Code
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                This QR code is printed at the bottom of customer receipts so buyers can scan and join the <strong>Al-Deewan WhatsApp VIP Community</strong> for new stock updates, catalog drops, and wholesale discounts.
+                This QR code is printed at the bottom of customer receipts so buyers can scan and join your <strong>WhatsApp VIP Community</strong> for new stock updates, catalog drops, and wholesale discounts.
               </div>
 
               <div className="form-group" style={{ marginTop: 2, marginBottom: 4 }}>
@@ -1349,7 +1349,7 @@ function SystemSetupTab() {
                     className="btn btn-secondary btn-sm"
                     onClick={() => {
                       set('receipt_qr_image', '')
-                      toast.success('Reverted to default Al-Deewan WhatsApp QR')
+                      toast.success('Reverted to default WhatsApp QR')
                     }}
                   >
                     <RefreshCw size={13} /> Reset to Default Community QR
@@ -2623,6 +2623,8 @@ function ReindexTab() {
   const { currentUser } = useAuth()
   const [running, setRunning] = useState(false)
   const [result, setResult]   = useState<{ fixed: number; message: string } | null>(null)
+  const [seeding, setSeeding] = useState(false)
+  const [seedResult, setSeedResult] = useState<{ message?: string; stats?: any } | null>(null)
 
   const handleReindex = async () => {
     setRunning(true)
@@ -2637,14 +2639,59 @@ function ReindexTab() {
     setRunning(false)
   }
 
+  const handleSeedDemo = async (mode: 'if_empty' | 'force') => {
+    setSeeding(true)
+    setSeedResult(null)
+    try {
+      const res = await window.api.seedDemoData(currentUser!.id, mode)
+      if (res.success && res.data) {
+        setSeedResult(res.data)
+        toast.success('Demo sample dataset populated successfully!')
+      } else {
+        toast.error(res.error || 'Failed to populate demo data')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error populating demo data')
+    } finally {
+      setSeeding(false)
+    }
+  }
+
   return (
-    <div className="page-body" style={{ maxWidth: 500 }}>
+    <div className="page-body" style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Demo / Sample Data card */}
+      <div className="card">
+        <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Sparkles size={16} style={{ color: 'var(--color-primary)' }} />
+          <span className="card-title">Demo & Showcase Dataset (Sample Data)</span>
+        </div>
+        <div className="card-body">
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
+            Populate realistic retail apparel products with standard barcodes, customer profiles, textile suppliers, 75+ sales invoices across the last 30 days, operational expenses, and past day-closings. Ideal for software demonstrations and showcase videos.
+          </p>
+          {seedResult && (
+            <div style={{ padding: 14, background: 'var(--color-success-bg)', borderRadius: 10, border: '1px solid #86EFAC', marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, color: 'var(--color-success)' }}>✅ Demo Dataset Loaded</div>
+              <div style={{ fontSize: '0.875rem', marginTop: 4 }}>{seedResult.message}</div>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={() => handleSeedDemo('force')} disabled={seeding}>
+              {seeding
+                ? <><Loader2 size={16} className="animate-spin" /> Populating Data...</>
+                : <><Sparkles size={16} /> Load Full Demo Dataset</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Reindex card */}
       <div className="card">
         <div className="card-header"><RefreshCw size={16} style={{ color: 'var(--color-primary)' }} /><span className="card-title">Data Reindex (5-3 Index)</span></div>
         <div className="card-body">
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: 20 }}>
             Recalculates all stock quantities from the full transaction history.
-{/* ... */}
             Use this if you notice any discrepancies in stock quantities or totals.
           </p>
           {result && (
@@ -2653,7 +2700,7 @@ function ReindexTab() {
               <div style={{ fontSize: '0.875rem', marginTop: 4 }}>{result.message}</div>
             </div>
           )}
-          <button className="btn btn-primary btn-lg" onClick={handleReindex} disabled={running}>
+          <button className="btn btn-secondary btn-lg" onClick={handleReindex} disabled={running}>
             {running
               ? <><span className="animate-spin" style={{ display: 'inline-block' }}>⟳</span> Running...</>
               : <><RefreshCw size={16} /> Run Reindex Now</>
@@ -2781,11 +2828,11 @@ function BackupTab() {
     if (data.isTestPing) {
       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Google Drive Webhook Connected!' })).setMimeType(ContentService.MimeType.JSON);
     }
-    var folderName = data.folderName || 'Al-Deewan POS Backups';
+    var folderName = data.folderName || 'POS Backups';
     var folders = DriveApp.getFoldersByName(folderName);
     var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
     var decoded = Utilities.base64Decode(data.fileData);
-    var blob = Utilities.newBlob(decoded, data.mimeType || 'application/x-sqlite3', data.filename || 'al-deewan-backup.db');
+    var blob = Utilities.newBlob(decoded, data.mimeType || 'application/x-sqlite3', data.filename || 'pos-backup.db');
     var file = folder.createFile(blob);
     return ContentService.createTextOutput(JSON.stringify({ success: true, fileId: file.getId(), url: file.getUrl() })).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -2985,7 +3032,7 @@ function BackupTab() {
           {/* Action Bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 4 }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-              Folder: <code>Google Drive / {gdriveConfig?.folderName || 'Al-Deewan POS Backups'} /</code>
+              Folder: <code>Google Drive / {gdriveConfig?.folderName || 'POS Backups'} /</code>
             </div>
             <button
               type="button"

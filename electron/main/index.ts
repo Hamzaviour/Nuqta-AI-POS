@@ -36,7 +36,8 @@ import {
   getCustomerStatement, getSupplierStatement, restoreDatabaseFromFile,
   getAgingReport, bulkImportItems, getAuditLogs, getLowStockItems,
   createExpense, getExpenseById, getExpenses, deleteExpense, getTodayPOSSummary,
-  BulkImportItemInput, getItemSalesPerformance, getFinancialAnalytics
+  BulkImportItemInput, getItemSalesPerformance, getFinancialAnalytics,
+  runDemoSeed
 } from '../database/db'
 import { startMobileServer, stopMobileServer, getMobileServerInfo } from './mobileServer'
 import {
@@ -70,7 +71,7 @@ function createWindow(): void {
     minHeight: 700,
     show: false,
     autoHideMenuBar: true,
-    title: 'Al-Deewan POS System',
+    title: 'POS System',
     icon: iconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -102,7 +103,7 @@ function createWindow(): void {
   }
 }
 
-app.setName('Al-Deewan POS System')
+app.setName('POS System')
 
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.aldeewan.pos')
@@ -683,7 +684,7 @@ function registerIpcHandlers(): void {
     }
     const { filePath } = await dialog.showSaveDialog({
       title: 'Save Backup',
-      defaultPath: `al-deewan-backup-${new Date().toISOString().slice(0,10)}.db`,
+      defaultPath: `pos-backup-${new Date().toISOString().slice(0,10)}.db`,
       filters: [{ name: 'Database Backup', extensions: ['db'] }]
     })
     if (!filePath) return { success: false, error: 'Cancelled' }
@@ -694,6 +695,21 @@ function registerIpcHandlers(): void {
       logAction(requestingUserId, 'BACKUP', 'system', null, { path: filePath })
       return { success: true, path: filePath }
     } catch (err) {
+      return { success: false, error: String(err) }
+    }
+  })
+
+  ipcMain.handle('maintenance:seed-demo-data', async (_, requestingUserId: string, mode?: 'if_empty' | 'force') => {
+    const requester = getUserById(requestingUserId)
+    if (!requester || !requester.perm_access_maintenance) {
+      return { success: false, error: 'Access denied. Maintenance is Owner-only.' }
+    }
+    try {
+      const result = runDemoSeed(mode || 'force')
+      logAction(requestingUserId, 'SEED_DEMO_DATA', 'system', null, result)
+      return { success: true, data: result }
+    } catch (err) {
+      console.error('[maintenance:seed-demo-data] error:', err)
       return { success: false, error: String(err) }
     }
   })
@@ -1179,7 +1195,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('mobile:allow-firewall', async () => {
     try {
-      const psCommand = `Start-Process powershell -Verb runAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command netsh advfirewall firewall add rule name=\\"Al-Deewan POS Mobile Server\\" dir=in action=allow protocol=TCP localport=8080-8095 profile=any'`
+      const psCommand = `Start-Process powershell -Verb runAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command netsh advfirewall firewall add rule name=\\"POS Mobile Server\\" dir=in action=allow protocol=TCP localport=8080-8095 profile=any'`
       const { exec } = require('child_process')
       exec(`powershell -Command "${psCommand}"`, (err: any) => {
         if (err) console.error('Firewall rule error:', err)

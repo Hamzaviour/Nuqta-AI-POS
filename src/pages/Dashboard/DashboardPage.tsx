@@ -211,7 +211,7 @@ export default function DashboardPage() {
           {canPos && (
             <button className="btn btn-primary btn-md" onClick={() => navigate('/pos')} style={{ fontWeight: 700 }}>
               <ShoppingCart size={16} /> POS Terminal
-              <span className="hotkey" style={{ marginLeft: 4, background: 'rgba(255,255,255,0.25)', color: '#fff', border: 'none' }}>F2</span>
+              <span className="hotkey" style={{ marginLeft: 4, background: 'rgba(255,255,255,0.25)', color: '#fff', border: 'none' }}>F1</span>
             </button>
           )}
           {canSales && (

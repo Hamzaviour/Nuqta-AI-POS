@@ -1,9 +1,9 @@
 {
-  "name": "al-deewan-pos",
+  "name": "pos-system",
   "version": "2.0.0",
-  "description": "Al-Deewan POS System v2.0.0 - Wholesale & Retail Point of Sale, Inventory Management, Accounting and Remote Live Portal",
+  "description": "POS System v2.0.0 - Wholesale & Retail Point of Sale, Inventory Management, Accounting and Remote Live Portal",
   "main": "out/main/index.js",
-  "author": "Al-Deewan Brand",
+  "author": "POS System",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
@@ -53,8 +53,8 @@
   },
   "build": {
     "appId": "com.aldeewan.pos",
-    "productName": "Al-Deewan POS System",
-    "copyright": "Copyright © 2026 Al-Deewan Brand",
+    "productName": "POS System",
+    "copyright": "Copyright © 2026",
     "compression": "maximum",
     "asar": true,
     "directories": {
@@ -81,17 +81,17 @@
         }
       ],
       "icon": "resources/icon.ico",
-      "executableName": "AlDeewan",
-      "publisherName": "Al-Deewan",
-      "legalTrademarks": "Al-Deewan POS System"
+      "executableName": "POSSystem",
+      "publisherName": "POS System",
+      "legalTrademarks": "POS System"
     },
     "nsis": {
-      "artifactName": "Al-Deewan-Setup-${version}.${ext}",
+      "artifactName": "POS-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Al-Deewan POS System",
+      "shortcutName": "POS System",
       "installerIcon": "resources/icon.ico",
       "uninstallerIcon": "resources/icon.ico",
       "installerHeaderIcon": "resources/icon.ico",
@@ -101,7 +101,7 @@
       "allowElevation": true
     },
     "portable": {
-      "artifactName": "Al-Deewan-Portable-${version}.${ext}"
+      "artifactName": "POS-Portable-${version}.${ext}"
     },
     "mac": {
       "target": [
@@ -123,18 +123,18 @@
       ],
       "icon": "resources/icon.png",
       "category": "public.app-category.business",
-      "artifactName": "Al-Deewan-POS-${version}-Mac-${arch}.${ext}",
+      "artifactName": "POS-System-${version}-Mac-${arch}.${ext}",
       "darkModeSupport": true,
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Al-Deewan POS uses the microphone for Voice AI invoicing and voice commands."
+        "NSMicrophoneUsageDescription": "POS System uses the microphone for Voice AI invoicing and voice commands."
       }
     },
     "dmg": {
-      "title": "Al-Deewan POS System ${version}",
+      "title": "POS System ${version}",
       "contents": [
         {
           "x": 130,

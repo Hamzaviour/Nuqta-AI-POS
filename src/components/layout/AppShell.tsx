@@ -5,39 +5,43 @@ import {
   LayoutDashboard, ShoppingCart, FileText, Package, ShoppingBag,
   BarChart3, LogOut, RefreshCw, Wrench,
   Store, User as UserIcon, MessageSquare, RotateCcw, Lock, Barcode as BarcodeIcon,
-  Users, Clock
+  Users, Clock, ChevronLeft, ChevronRight, Printer, Maximize2, Minimize2, Search
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useHotkeys } from '../../contexts/HotkeyContext'
+import { CommandPaletteModal } from './CommandPaletteModal'
 import logoImg from '../../assets/logo.png'
+
+interface NavItemDef {
+  path: string
+  label: string
+  icon: React.ElementType
+  hotkey?: string
+  perm?: string
+  badgeKey?: 'pending' | 'orders' | 'low_stock'
+}
 
 interface NavGroup {
   label: string
-  items: {
-    path: string
-    label: string
-    icon: React.ElementType
-    hotkey?: string
-    perm?: string
-  }[]
+  items: NavItemDef[]
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: 'Core Operations',
+    label: 'Counter & Sales',
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, hotkey: 'F1', perm: 'pos' },
-      { path: '/pending-invoices', label: 'Pending Invoices', icon: Clock, perm: 'sales' },
-      { path: '/orders', label: 'Online Orders', icon: MessageSquare, perm: 'orders' },
+      { path: '/pending-invoices', label: 'Pending Invoices', icon: Clock, perm: 'sales', badgeKey: 'pending' },
+      { path: '/orders', label: 'Online Orders', icon: MessageSquare, perm: 'orders', badgeKey: 'orders' },
+      { path: '/sales', label: 'Sales History', icon: FileText, hotkey: 'F4', perm: 'sales' },
+      { path: '/returns', label: 'Returns & Refunds', icon: RotateCcw, perm: 'process_return' },
     ]
   },
   {
-    label: 'Sales & Inventory',
+    label: 'Inventory & Catalog',
     items: [
-      { path: '/sales', label: 'Sales History', icon: FileText, perm: 'sales' },
-      { path: '/returns', label: 'Returns & Refunds', icon: RotateCcw, perm: 'process_return' },
-      { path: '/stock', label: 'Stock Catalog', icon: Package, perm: 'add_edit_stock' },
+      { path: '/stock', label: 'Stock & Products', icon: Package, perm: 'add_edit_stock', badgeKey: 'low_stock' },
       { path: '/barcode', label: 'Barcode Tags', icon: BarcodeIcon, perm: 'barcode' },
       { path: '/purchases', label: 'Purchases', icon: ShoppingBag, perm: 'record_purchase' },
     ]
@@ -45,14 +49,31 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Finance & Management',
     items: [
-      { path: '/day-close', label: 'Day Close', icon: Lock, perm: 'day_closing' },
-      { path: '/accounts', label: 'Accounts & Expense', icon: Store, perm: 'view_accounts' },
       { path: '/reports', label: 'Reports & Analytics', icon: BarChart3, perm: 'view_all_reports' },
-      { path: '/customers', label: 'Customers', icon: Users, perm: 'customers' },
+      { path: '/accounts', label: 'Accounts & Expense', icon: Store, perm: 'view_accounts' },
+      { path: '/customers', label: 'Customer Accounts', icon: Users, perm: 'customers' },
+      { path: '/day-close', label: 'Day Closing', icon: Lock, perm: 'day_closing' },
       { path: '/maintenance', label: 'System Maintenance', icon: Wrench, perm: 'access_maintenance' },
     ]
   }
 ]
+
+const ROUTE_INFO: Record<string, { title: string; section: string }> = {
+  '/dashboard': { title: 'Dashboard Overview', section: 'Counter' },
+  '/pos': { title: 'POS Terminal', section: 'Counter' },
+  '/pending-invoices': { title: 'Pending Invoices', section: 'Counter' },
+  '/orders': { title: 'Online & WhatsApp Orders', section: 'Counter' },
+  '/sales': { title: 'Sales History & Records', section: 'Sales' },
+  '/returns': { title: 'Returns & Refunds', section: 'Sales' },
+  '/stock': { title: 'Stock & Inventory Catalog', section: 'Inventory' },
+  '/barcode': { title: 'Barcode Label Generator', section: 'Inventory' },
+  '/purchases': { title: 'Supplier Purchases', section: 'Inventory' },
+  '/day-close': { title: 'Day Closing Reconciliation', section: 'Finance' },
+  '/accounts': { title: 'Accounts & Expense Ledger', section: 'Finance' },
+  '/reports': { title: 'Financial Reports & Analytics', section: 'Finance' },
+  '/customers': { title: 'Customer Directory & Ledgers', section: 'CRM' },
+  '/maintenance': { title: 'System Administration & Setup', section: 'System' }
+}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
@@ -61,6 +82,78 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [time, setTime] = useState(new Date())
   const [showChangeUser, setShowChangeUser] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement)
+  const [hoveredNavItem, setHoveredNavItem] = useState<{ label: string; hotkey?: string; top: number } | null>(null)
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('pos_sidebar_collapsed') === 'true'
+  })
+
+  // Synchronize fullscreen state with browser / Electron events
+  useEffect(() => {
+    const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', handleFsChange)
+    return () => document.removeEventListener('fullscreenchange', handleFsChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {})
+      }
+    }
+  }
+
+  // Live badge counts
+  const [pendingCount, setPendingCount] = useState<number>(0)
+  const [ordersCount, setOrdersCount] = useState<number>(0)
+  const [lowStockCount, setLowStockCount] = useState<number>(0)
+
+  const toggleCollapse = () => {
+    setCollapsed(prev => {
+      const next = !prev
+      localStorage.setItem('pos_sidebar_collapsed', String(next))
+      return next
+    })
+  }
+
+  // Poll live badge counts periodically
+  const fetchBadgeCounts = async () => {
+    try {
+      if (window.api?.getPendingInvoices) {
+        const pList = await window.api.getPendingInvoices()
+        if (Array.isArray(pList)) {
+          setPendingCount(pList.filter((i: any) => i.status === 'pending').length)
+        }
+      }
+    } catch {}
+
+    try {
+      if (window.api?.getOnlineOrders) {
+        const oList = await window.api.getOnlineOrders('pending')
+        if (Array.isArray(oList)) {
+          setOrdersCount(oList.length)
+        }
+      }
+    } catch {}
+
+    try {
+      if (window.api?.getLowStockItems) {
+        const lList = await window.api.getLowStockItems()
+        if (Array.isArray(lList)) {
+          setLowStockCount(lList.length)
+        }
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    fetchBadgeCounts()
+    const badgeTimer = setInterval(fetchBadgeCounts, 25000)
+    return () => clearInterval(badgeTimer)
+  }, [location.pathname])
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -68,12 +161,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   useHotkeys({
-    'F1': () => navigate('/pos'),
+    'F1': () => { if (location.pathname !== '/pos') navigate('/pos') },
+    'F4': () => { if (location.pathname !== '/pos') navigate('/sales') },
+    'Ctrl+B': () => toggleCollapse(),
+    'Ctrl+K': () => setShowCommandPalette(prev => !prev),
+    'F11': () => toggleFullscreen(),
     'Ctrl+F12': () => setShowChangeUser(true),
     'Ctrl+Shift+L': () => setShowLogoutConfirm(true),
     'Ctrl+Q': () => setShowLogoutConfirm(true),
-    'F11': () => setShowLogoutConfirm(true),
-  })
+  }, { priority: 0 })
 
   if (!currentUser) return null
 
@@ -104,74 +200,125 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return can(perm as any)
   }
 
+  const currentRouteInfo = ROUTE_INFO[location.pathname] || { title: 'Point of Sale', section: 'System' }
+
+  const getBadgeFor = (badgeKey?: string) => {
+    if (badgeKey === 'pending' && pendingCount > 0) return { count: pendingCount, type: 'amber' as const }
+    if (badgeKey === 'orders' && ordersCount > 0) return { count: ordersCount, type: 'emerald' as const }
+    if (badgeKey === 'low_stock' && lowStockCount > 0) return { count: `${lowStockCount} Low`, type: 'rose' as const }
+    return null
+  }
+
   return (
     <div className="app-shell">
-      {/* ---- MODERN LUXURY SIDEBAR ---- */}
-      <nav className="app-nav">
-        {/* Terminal Online Status Header above Core Operations */}
-        <div style={{
-          padding: '14px 16px',
-          borderBottom: '1px solid var(--color-nav-border)',
-          background: 'rgba(255, 255, 255, 0.02)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10
-        }}>
-          <span style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#10B981',
-            boxShadow: '0 0 8px #10B981',
-            flexShrink: 0
-          }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#FFFFFF',
-              letterSpacing: '0.04em'
-            }}>
+      {/* ---- MODERN LUXURY COLLAPSIBLE SIDEBAR ---- */}
+      <nav className={`app-nav ${collapsed ? 'collapsed' : ''}`}>
+        {/* Brand Header */}
+        <div className="app-nav-brand">
+          <img
+            src={logoImg}
+            alt="POS Logo"
+            className="app-nav-logo-img"
+            onClick={collapsed ? toggleCollapse : undefined}
+            style={{ cursor: collapsed ? 'pointer' : 'default' }}
+            title={collapsed ? 'Click to expand sidebar' : undefined}
+          />
+          {!collapsed && (
+            <div className="app-nav-brand-text">
+              <span className="app-nav-brand-title">MY STORE</span>
+              <span className="app-nav-brand-sub">Wholesale & Retail POS</span>
+            </div>
+          )}
+          <button
+            type="button"
+            className="nav-collapse-btn"
+            onClick={toggleCollapse}
+            title={collapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse to compact rail (Ctrl+B)'}
+          >
+            {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+          </button>
+        </div>
+
+        {/* Status indicator strip (expanded mode only) */}
+        {!collapsed && (
+          <div className="nav-status-strip">
+            <span className="topbar-pulse-dot" />
+            <span style={{ fontSize: '0.675rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.04em' }}>
               TERMINAL 01:
             </span>
-            <span style={{
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              color: '#34D399',
-              letterSpacing: '0.04em'
-            }}>
+            <span style={{ fontSize: '0.675rem', fontWeight: 700, color: '#34D399', letterSpacing: '0.04em' }}>
               SYSTEM ONLINE
             </span>
           </div>
-        </div>
+        )}
 
         {/* Grouped Navigation Links */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
-          {NAV_GROUPS.map((group, gIdx) => {
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '6px 0' }}>
+          {NAV_GROUPS.map((group) => {
             const visibleItems = group.items.filter(item => isVisible(item.perm))
             if (visibleItems.length === 0) return null
 
             return (
-              <div key={group.label} style={{ marginBottom: 12 }}>
-                <div className="nav-section-label">
-                  {group.label}
-                </div>
+              <div key={group.label} style={{ marginBottom: collapsed ? 6 : 10 }}>
+                {!collapsed && (
+                  <div className="nav-section-label">
+                    {group.label}
+                  </div>
+                )}
+                {collapsed && <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '6px 12px' }} />}
                 {visibleItems.map(item => {
                   const active = isActive(item.path)
+                  const badge = getBadgeFor(item.badgeKey)
+                  const tooltipText = `${item.label}${item.hotkey ? ` (${item.hotkey})` : ''}`
+
                   return (
                     <motion.div
                       key={item.path}
-                      whileHover={{ x: 2 }}
+                      whileHover={{ x: collapsed ? 0 : 2 }}
                       whileTap={{ scale: 0.98 }}
                       className={`nav-item ${active ? 'active' : ''}`}
                       onClick={() => navigate(item.path)}
+                      title={collapsed ? tooltipText : undefined}
+                      onMouseEnter={(e) => {
+                        if (collapsed) {
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          setHoveredNavItem({
+                            label: item.label,
+                            hotkey: item.hotkey,
+                            top: rect.top + rect.height / 2
+                          })
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        if (collapsed) setHoveredNavItem(null)
+                      }}
                     >
                       <div className="nav-item-icon">
                         <item.icon size={17} />
+                        {collapsed && badge && (
+                          <span
+                            className="nav-dot-badge"
+                            style={{
+                              background: badge.type === 'amber' ? '#F59E0B' : badge.type === 'emerald' ? '#10B981' : '#F43F5E',
+                              boxShadow: `0 0 6px ${badge.type === 'amber' ? '#F59E0B' : badge.type === 'emerald' ? '#10B981' : '#F43F5E'}`
+                            }}
+                          />
+                        )}
                       </div>
-                      <span style={{ flex: 1 }}>{item.label}</span>
-                      {item.hotkey && (
-                        <span className="nav-badge">{item.hotkey}</span>
+                      {!collapsed && (
+                        <>
+                          <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {item.label}
+                          </span>
+                          {badge && (
+                            <span className={`nav-badge-pill ${badge.type}`}>
+                              {badge.count}
+                            </span>
+                          )}
+                          {item.hotkey && !badge && (
+                            <kbd className="nav-hotkey-kbd">{item.hotkey}</kbd>
+                          )}
+                        </>
                       )}
                     </motion.div>
                   )
@@ -181,143 +328,168 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </div>
 
-        {/* User Card in Footer */}
+        {/* User Profile Card in Footer */}
         <div className="nav-user-section">
-          <div className="nav-user-card" onClick={() => setShowChangeUser(true)} title="Click to switch user (Ctrl+F12)">
+          <div
+            className="nav-user-card"
+            onClick={() => setShowChangeUser(true)}
+            title={collapsed ? `${currentUser.name} (${roleLabel(currentUser.role)}) — Switch Staff (Ctrl+F12)` : 'Click to switch staff account (Ctrl+F12)'}
+          >
             <div className="nav-user-avatar">{initials}</div>
-            <div className="nav-user-info">
-              <div className="nav-user-name">{currentUser.name}</div>
-              <div className="nav-user-role" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{
-                  padding: '1px 6px',
-                  borderRadius: 4,
-                  fontSize: '0.625rem',
-                  fontWeight: 700,
-                  background: roleBadgeStyle(currentUser.role).bg,
-                  color: roleBadgeStyle(currentUser.role).color,
-                  border: `1px solid ${roleBadgeStyle(currentUser.role).border}`
-                }}>
-                  {roleLabel(currentUser.role)}
-                </span>
-                <span style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.4)' }}>
-                  Ctrl+F12
-                </span>
-              </div>
-            </div>
-            <RefreshCw size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
+            {!collapsed && (
+              <>
+                <div className="nav-user-info">
+                  <div className="nav-user-name">{currentUser.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                    <span style={{
+                      padding: '1px 5px',
+                      borderRadius: 3,
+                      fontSize: '0.625rem',
+                      fontWeight: 700,
+                      background: roleBadgeStyle(currentUser.role).bg,
+                      color: roleBadgeStyle(currentUser.role).color,
+                      border: `1px solid ${roleBadgeStyle(currentUser.role).border}`,
+                      lineHeight: 1.1
+                    }}>
+                      {roleLabel(currentUser.role)}
+                    </span>
+                    <span style={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>
+                      Ctrl+F12
+                    </span>
+                  </div>
+                </div>
+                <RefreshCw size={13} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+              </>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* ---- MAIN CONTENT & BRAND TOP BAR ---- */}
-      <div className="app-content">
-        {/* Brand Top Header Banner Bar */}
-        <div style={{
-          background: 'linear-gradient(90deg, #070B16 0%, #111827 50%, #070B16 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '6px 24px',
-          minHeight: 58,
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          flexShrink: 0,
-          color: '#fff',
-          zIndex: 10,
-          position: 'relative'
-        }}>
-          {/* Left Grid Placeholder for symmetry */}
-          <div style={{ justifySelf: 'start' }} />
+      {/* Instant Floating Tooltip for Collapsed Sidebar */}
+      {collapsed && hoveredNavItem && (
+        <div className="nav-rail-floating-tooltip" style={{ top: hoveredNavItem.top }}>
+          <span>{hoveredNavItem.label}</span>
+          {hoveredNavItem.hotkey && <kbd className="nav-hotkey-kbd">{hoveredNavItem.hotkey}</kbd>}
+        </div>
+      )}
 
-          {/* Center: AL-DEEWAN WHOLESALE & RETAIL POS Brand Display (Shifted slightly left) */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 14,
-            justifySelf: 'center',
-            transform: 'translateX(-45px)'
-          }}>
-            <img
-              src={logoImg}
-              alt="Al-Deewan"
-              style={{
-                width: 48,
-                height: 48,
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 3px 12px rgba(196,30,58,0.7))'
-              }}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', lineHeight: 1.15 }}>
-              <span style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.25rem',
-                fontWeight: 900,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                background: 'linear-gradient(180deg, #FFFFFF 30%, #E2E8F0 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-              }}>
-                AL-DEEWAN
+      {/* ---- MAIN CONTENT & STREAMLINED OPERATIONS TOP BAR ---- */}
+      <div className="app-content">
+        {/* Sleek Operations Action Bar */}
+        <header className="operations-top-bar">
+          {/* Left: Dynamic Breadcrumb & Register Tag & Quick Search */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="topbar-breadcrumb-pill">
+              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {currentRouteInfo.section}
               </span>
-              <span style={{
-                color: '#D4AF37',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase'
-              }}>
-                Wholesale & Retail POS
+              <span style={{ color: 'rgba(255,255,255,0.25)' }}>/</span>
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>
+                {currentRouteInfo.title}
               </span>
+            </div>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '3px 8px', borderRadius: 4,
+              background: 'rgba(196, 30, 58, 0.12)', border: '1px solid rgba(196, 30, 58, 0.28)',
+              color: '#FF758F', fontSize: '0.6875rem', fontWeight: 700, fontFamily: 'var(--font-mono)'
+            }}>
+              <span>REG-01</span>
+            </div>
+
+            {/* Quick Search / Command Palette Trigger */}
+            <div
+              className="topbar-search-trigger"
+              onClick={() => setShowCommandPalette(true)}
+              title="Quick Search items, customers, navigation (Ctrl+K)"
+            >
+              <Search size={13} style={{ opacity: 0.6 }} />
+              <span>Quick Search...</span>
+              <kbd className="nav-hotkey-kbd" style={{ fontSize: '0.5625rem', padding: '1px 5px', marginLeft: 'auto' }}>Ctrl+K</kbd>
             </div>
           </div>
 
-          {/* Right: Clock & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifySelf: 'end' }}>
+          {/* Center: Live Hardware & Server Status Pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="topbar-status-pill">
+              <span className="topbar-pulse-dot" />
+              <span>Master Sync Online</span>
+              <span style={{ opacity: 0.35 }}>•</span>
+              <Printer size={12} style={{ color: '#34D399' }} />
+              <span>80mm Ready</span>
+            </div>
+          </div>
+
+          {/* Right: Fullscreen, Clock, Active Cashier & Logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Live Clock */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: '0.775rem',
-              color: 'rgba(255,255,255,0.85)',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              padding: '3px 10px',
-              borderRadius: 'var(--radius-sm)',
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: '0.775rem', color: 'rgba(255,255,255,0.9)',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
+              padding: '3px 9px', borderRadius: 'var(--radius-sm)',
               fontFamily: 'var(--font-mono)'
             }}>
-              <Clock size={13} style={{ color: '#F1C40F' }} />
+              <Clock size={13} style={{ color: '#F59E0B' }} />
               <span>{time.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
 
+            {/* Kiosk Fullscreen Mode Toggle */}
+            <button
+              type="button"
+              className="topbar-icon-btn"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Exit Fullscreen (F11)' : 'Enter Fullscreen Kiosk Mode (F11)'}
+            >
+              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+
+            {/* Cashier profile switcher pill */}
+            <div
+              onClick={() => setShowChangeUser(true)}
+              className="topbar-action-btn"
+              title="Click to Switch User (Ctrl+F12)"
+              style={{ cursor: 'pointer' }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #C41E3A, #7A0015)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.6rem', fontWeight: 800, color: '#fff'
+              }}>
+                {initials}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#F1F5F9' }}>{currentUser.name}</span>
+              <span style={{
+                fontSize: '0.6rem', fontWeight: 700,
+                padding: '1px 5px', borderRadius: 3,
+                background: roleBadgeStyle(currentUser.role).bg,
+                color: roleBadgeStyle(currentUser.role).color,
+                border: `1px solid ${roleBadgeStyle(currentUser.role).border}`,
+                lineHeight: 1
+              }}>
+                {roleLabel(currentUser.role)}
+              </span>
+            </div>
+
+            {/* Logout button */}
             <button
               type="button"
               onClick={() => setShowLogoutConfirm(true)}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                background: 'rgba(239, 68, 68, 0.16)',
-                border: '1px solid rgba(239, 68, 68, 0.35)',
-                color: '#FCA5A5',
-                padding: '4px 10px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: 'rgba(239, 68, 68, 0.14)', border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#FCA5A5', padding: '3px 8px', borderRadius: 'var(--radius-sm)',
+                fontSize: '0.725rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s ease'
               }}
               title="Logout Session (Ctrl+Shift+L / Ctrl+Q)"
             >
-              <LogOut size={13} />
+              <LogOut size={12} />
               <span>Logout</span>
-              <span className="hotkey" style={{ fontSize: '0.5625rem', background: 'rgba(0,0,0,0.3)', color: '#fff', border: 'none' }}>
-                Ctrl+Shift+L
-              </span>
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Page Viewport */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
@@ -327,7 +499,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* Bottom Status & Hotkey Bar */}
         <div className="status-bar">
           <div className="status-bar-item highlight">
-            <UserIcon size={14} style={{ color: 'var(--color-primary-light)' }} />
+            <UserIcon size={13} style={{ color: 'var(--color-primary-light)' }} />
             <span>{currentUser.name}</span>
             <span style={{
               fontSize: '0.6875rem',
@@ -343,19 +515,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {time.toLocaleDateString('en-PK', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 14 }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
             {[
               ['F1', 'POS Terminal'],
-              ['F2', 'Customer'],
-              ['F3', 'New Tab'],
-              ['F4', 'Previous Sales'],
-              ['F9', 'Hold Bill'],
-              ['F10', 'Item Search'],
+              ...(location.pathname === '/pos' ? [['F2', 'Select Customer']] : []),
+              ['F4', location.pathname === '/pos' ? 'Prev Sales' : 'Sales History'],
+              ['Ctrl+B', 'Sidebar'],
+              ['Ctrl+K', 'Search'],
+              ['F11', 'Fullscreen'],
+              ['Ctrl+F12', 'Staff'],
               ['Ctrl+Shift+L', 'Logout'],
             ].map(([key, label]) => (
-              <div key={key} className="status-bar-item" style={{ gap: 6 }}>
-                <span className="hotkey">{key}</span>
-                <span style={{ fontSize: '0.75rem' }}>{label}</span>
+              <div key={key} className="status-bar-item" style={{ gap: 5 }}>
+                <span className="hotkey" style={{ fontSize: '0.625rem' }}>{key}</span>
+                <span style={{ fontSize: '0.725rem' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -370,6 +543,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <LogoutConfirmModal onClose={() => setShowLogoutConfirm(false)} />
+      )}
+
+      {/* Universal Command Palette Modal */}
+      {showCommandPalette && (
+        <CommandPaletteModal onClose={() => setShowCommandPalette(false)} />
       )}
     </div>
   )

@@ -1221,7 +1221,7 @@ function FinancialAnalyticsTab() {
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `AlDeewan_Financial_Analytics_${fromDate}_to_${toDate}.csv`)
+    link.setAttribute('download', `Financial_Analytics_${fromDate}_to_${toDate}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

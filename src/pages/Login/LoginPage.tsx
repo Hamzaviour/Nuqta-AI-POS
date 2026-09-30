@@ -219,7 +219,7 @@ export default function LoginPage() {
 
             <img
               src={logoImg}
-              alt="Al-Deewan Brand"
+              alt="POS System"
               style={{
                 height: 84,
                 width: 'auto',
@@ -248,7 +248,7 @@ export default function LoginPage() {
             WebkitTextFillColor: 'transparent',
             filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))'
           }}>
-            AL-DEEWAN
+            POINT OF SALE
           </h1>
 
           <div style={{
@@ -703,7 +703,7 @@ export default function LoginPage() {
           fontSize: '0.7rem',
           letterSpacing: '0.04em'
         }}>
-          Al-Deewan Point of Sale · v1.0 Enterprise
+          Point of Sale System · v2.0 Enterprise
         </div>
       </div>
     </div>

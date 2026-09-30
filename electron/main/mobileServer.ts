@@ -39,7 +39,7 @@ let currentPort = 8080
 const activeSessions = new Set<string>()
 
 /**
- * Locate and return the official Al-Deewan brand logo buffer
+ * Locate and return the official brand logo buffer
  */
 function getBrandLogoBuffer(): { buffer: Buffer; mimeType: string } | null {
   const possiblePaths = [
@@ -222,7 +222,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     res.writeHead(200)
     res.end(JSON.stringify({
       app: 'al-deewan-pos-master',
-      name: 'Al-Deewan Master Terminal 1',
+      name: 'Master Terminal 1',
       port: currentPort,
       ips: getLocalIpAddresses(),
       timestamp: Date.now()
@@ -310,7 +310,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   if (pathname === '/api/store-info') {
     setCorsAndHeaders(res)
     try {
-      const storeName = getSetting('store_name') || 'Al-Deewan Clothing & Garments'
+      const storeName = getSetting('store_name') || 'My Store'
       const phone = getSetting('store_phone') || ''
       const address = getSetting('store_address') || ''
       res.writeHead(200)
@@ -379,7 +379,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
       const categories = getAllCategories()
       const brands = getAllBrands()
       const customers = getAllCustomers()
-      const storeName = getSetting('store_name') || 'Al-Deewan Clothing & Garments'
+      const storeName = getSetting('store_name') || 'My Store'
       const phone = getSetting('store_phone') || ''
       const address = getSetting('store_address') || ''
 
@@ -896,7 +896,7 @@ function renderMobileAppHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Al-Deewan POS — Mobile Executive & Register Portal</title>
+  <title>POS System — Mobile Executive & Register Portal</title>
   <meta name="theme-color" content="#FFFFFF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1685,9 +1685,9 @@ function renderMobileAppHtml(): string {
   <!-- HEADER -->
   <header class="app-header">
     <div class="logo-container">
-      <img id="brand-logo-img" class="brand-logo-img" src="/api/logo" alt="Al-Deewan Logo" />
+      <img id="brand-logo-img" class="brand-logo-img" src="/api/logo" alt="POS Logo" />
       <div>
-        <div class="logo-title" id="header-store-name">Al-Deewan POS</div>
+        <div class="logo-title" id="header-store-name">POS System</div>
         <div class="logo-subtitle" id="header-user-role">Mobile Register Portal</div>
       </div>
     </div>
@@ -1707,8 +1707,8 @@ function renderMobileAppHtml(): string {
     <!-- SCREEN 1: PIN LOCK / LOGIN -->
     <div id="screen-pin">
       <div class="login-brand-box">
-        <img class="login-logo" src="/api/logo" alt="Al-Deewan Emblem" />
-        <div class="pin-title">Al-Deewan POS Portal</div>
+        <img class="login-logo" src="/api/logo" alt="POS Emblem" />
+        <div class="pin-title">POS Portal</div>
         <div class="pin-desc">Enter your 4-digit Staff or Owner PIN to start billing and access live store controls</div>
       </div>
       <div class="pin-dots">
@@ -2187,7 +2187,7 @@ function renderMobileAppHtml(): string {
 
       <div class="sheet-body" id="printable-receipt">
         <div style="text-align: center; border-bottom: 1px dashed var(--card-border); padding-bottom: 10px; margin-bottom: 10px;">
-          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="modal-receipt-store-name">Al-Deewan POS</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="modal-receipt-store-name">POS System</div>
           <div style="font-size: 11px; color: var(--text-muted);" id="modal-receipt-store-address">Clothing & Garments</div>
         </div>
 
@@ -2347,7 +2347,7 @@ function renderMobileAppHtml(): string {
     let allOrders = [];
     let selectedInvoiceForModal = null;
     let expectedCashAmount = 0;
-    let storeMeta = { storeName: 'Al-Deewan POS', phone: '', address: '' };
+    let storeMeta = { storeName: 'POS System', phone: '', address: '' };
 
     function fmt(num) {
       const val = Number(num) || 0;

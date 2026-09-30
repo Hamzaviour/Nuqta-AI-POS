@@ -53,7 +53,7 @@ export default function OrdersPage() {
       .map(i => `• ${i.item_name || 'Item'} (${i.part_number || ''}) x${i.qty} = Rs. ${i.line_total.toLocaleString()}`)
       .join('\n')
 
-    const message = `*Al-Deewan Brand — Order Details* 👗\n` +
+    const message = `*Order Details* 👗\n` +
       `Invoice #: *${order.invoice_number}*\n` +
       `Date: ${order.date}\n` +
       `Status: *${order.status.toUpperCase()}*\n` +
@@ -62,7 +62,7 @@ export default function OrdersPage() {
       `Subtotal: Rs. ${order.subtotal.toLocaleString()}\n` +
       (order.discount_amount > 0 ? `Discount: -Rs. ${order.discount_amount.toLocaleString()}\n` : '') +
       `*Total Amount: Rs. ${order.grand_total.toLocaleString()}*\n\n` +
-      `Thank you for shopping with Al-Deewan Brand!`
+      `Thank you for your purchase!`
 
     const encoded = encodeURIComponent(message)
     const url = cleanPhone

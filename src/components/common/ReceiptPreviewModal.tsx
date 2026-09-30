@@ -140,13 +140,13 @@ export function ReceiptPreviewModal({
     ? null
     : (settings['receipt_header_logo'] || defaultInvoiceLogo)
 
-  const companyName = settings['company_name'] || 'Al-Deewan Brand'
+  const companyName = settings['company_name'] || 'My Store'
   const companyAddress = settings['company_address'] || 'Wholesale Clothing, Lahore, Pakistan'
   const companyPhone = settings['company_phone']
   const whatsappNumber = settings['whatsapp_number']
   const companyNtn = settings['company_ntn']
   const returnPolicy = settings['receipt_return_policy']
-  const receiptFooter = settings['receipt_footer'] || 'Thank you for shopping at Al-Deewan Brand!'
+  const receiptFooter = settings['receipt_footer'] || 'Thank you for your purchase!'
   const activeQR = settings['receipt_qr_image'] === 'none'
     ? null
     : (settings['receipt_qr_image'] || defaultWhatsAppQR)

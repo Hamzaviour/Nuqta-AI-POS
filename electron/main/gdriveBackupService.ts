@@ -45,7 +45,7 @@ export function checkInternetAccess(): Promise<boolean> {
 export async function getGDriveConfig(): Promise<GDriveConfig> {
   const enabled = getSetting('gdrive_backup_enabled') === '1'
   const webhookUrl = getSetting('gdrive_webhook_url') || ''
-  const folderName = getSetting('gdrive_folder_name') || 'Al-Deewan POS Backups'
+  const folderName = getSetting('gdrive_folder_name') || 'POS Backups'
   const frequencyDays = parseInt(getSetting('gdrive_frequency_days') || '7', 10) || 7
   const rawLastTime = getSetting('gdrive_last_backup_time')
   const lastBackupTime = rawLastTime ? parseInt(rawLastTime, 10) : null
@@ -128,8 +128,8 @@ export async function performGDriveBackup(requestingUserId?: string): Promise<{ 
     const base64Data = fileBuffer.toString('base64')
     const fileSizeMB = (fileBuffer.length / (1024 * 1024)).toFixed(2)
     const dateStr = new Date().toISOString().slice(0, 10)
-    const fileName = `al-deewan-backup-${dateStr}-${Date.now().toString().slice(-4)}.db`
-    const folderName = getSetting('gdrive_folder_name') || 'Al-Deewan POS Backups'
+    const fileName = `pos-backup-${dateStr}-${Date.now().toString().slice(-4)}.db`
+    const folderName = getSetting('gdrive_folder_name') || 'POS Backups'
 
     const payload = JSON.stringify({
       filename: fileName,
@@ -138,7 +138,7 @@ export async function performGDriveBackup(requestingUserId?: string): Promise<{ 
       folderName,
       fileSizeBytes: fileBuffer.length,
       createdAt: new Date().toISOString(),
-      storeName: 'Al-Deewan POS'
+      storeName: 'POS System'
     })
 
     console.log(`[GDrive Backup] Uploading snapshot (${fileSizeMB} MB) to Google Drive...`)
@@ -253,7 +253,7 @@ export async function testGDriveConnection(webhookUrl?: string): Promise<{ succe
     const testPayload = JSON.stringify({
       isTestPing: true,
       timestamp: Date.now(),
-      storeName: 'Al-Deewan POS Test'
+      storeName: 'POS System Test'
     })
 
     await uploadToWebhook(targetUrl, testPayload)

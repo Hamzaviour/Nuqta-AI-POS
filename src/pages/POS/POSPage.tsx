@@ -476,27 +476,34 @@ export default function POSPage() {
     const handleGlobalFKeys = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
         e.preventDefault()
+        e.stopPropagation()
         setShowCustomer(true)
       } else if (e.key === 'F10') {
         e.preventDefault()
+        e.stopPropagation()
         setShowSearch(true)
       } else if (e.key === 'F6') {
         if (currentUser?.role === 'owner') {
           e.preventDefault()
+          e.stopPropagation()
           loadVoiceData()
           setShowVoiceModal(true)
         }
       } else if (e.key === 'F7') {
         e.preventDefault()
+        e.stopPropagation()
         setShowExpense(true)
       } else if (e.key === 'F4') {
         e.preventDefault()
+        e.stopPropagation()
         setShowPreviousSales(true)
       } else if (e.key === 'F3') {
         e.preventDefault()
+        e.stopPropagation()
         handleNewInvoiceTab()
       } else if (e.key === 'F12') {
         e.preventDefault()
+        e.stopPropagation()
         handleProceedToPayment()
       }
     }
@@ -1145,10 +1152,10 @@ export default function POSPage() {
                 fontWeight: 800,
                 gap: 6
               }}
-              title="Owner AI Voice POS Assistant (Whisper Speech Engine) — Hotkey F6"
+              title="Voice POS Assistant — Hotkey F6"
             >
               <Mic size={15} style={{ color: 'var(--color-primary)' }} />
-              Voice Invoice (Owner)
+              Voice Invoice
               <span className="hotkey" style={{ fontSize: '0.5625rem', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--color-primary)', border: 'none' }}>F6</span>
             </button>
           )}
@@ -3450,6 +3457,56 @@ function PaymentModal({
                     boxShadow: isPartialCash ? '0 0 0 3px rgba(245,158,11,0.2)' : isInputActive ? '0 0 0 3px var(--color-primary-20)' : 'none'
                   }}
                 />
+
+                {/* Quick Tender Denomination Chips */}
+                <div className="quick-tender-row">
+                  <button
+                    type="button"
+                    className="quick-tender-chip"
+                    onClick={() => onTenderedChange(grandTotal.toString())}
+                  >
+                    Exact Cash
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-tender-chip"
+                    onClick={() => {
+                      const next500 = Math.ceil(grandTotal / 500) * 500
+                      onTenderedChange((next500 === grandTotal ? next500 + 500 : next500).toString())
+                    }}
+                  >
+                    {(() => {
+                      const next500 = Math.ceil(grandTotal / 500) * 500
+                      return `Rs. ${(next500 === grandTotal ? next500 + 500 : next500).toLocaleString()}`
+                    })()}
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-tender-chip"
+                    onClick={() => {
+                      const next1000 = Math.ceil(grandTotal / 1000) * 1000
+                      onTenderedChange((next1000 === grandTotal ? next1000 + 1000 : next1000).toString())
+                    }}
+                  >
+                    {(() => {
+                      const next1000 = Math.ceil(grandTotal / 1000) * 1000
+                      return `Rs. ${(next1000 === grandTotal ? next1000 + 1000 : next1000).toLocaleString()}`
+                    })()}
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-tender-chip"
+                    onClick={() => {
+                      const next5000 = Math.ceil(grandTotal / 5000) * 5000
+                      onTenderedChange((next5000 === grandTotal ? next5000 + 5000 : next5000).toString())
+                    }}
+                  >
+                    {(() => {
+                      const next5000 = Math.ceil(grandTotal / 5000) * 5000
+                      return `Rs. ${(next5000 === grandTotal ? next5000 + 5000 : next5000).toLocaleString()}`
+                    })()}
+                  </button>
+                </div>
                 {change > 0 && !isPartialCash && (
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',

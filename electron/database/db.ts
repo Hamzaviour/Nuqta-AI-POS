@@ -4,6 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import crypto from 'crypto'
+import { seedDemoData } from './seedDemoData'
 
 export class DatabaseWrapper {
   private db: SqlJsDatabase
@@ -329,6 +330,13 @@ export async function initDatabase(): Promise<DatabaseWrapper> {
 
   // Seed default owner if no users exist
   seedDefaultUsers(dbInstance)
+
+  // Seed demo dataset for presentation / demo video if empty
+  try {
+    seedDemoData(dbInstance, 'if_empty')
+  } catch (seedErr) {
+    console.warn('[DB] Auto demo seed note:', seedErr)
+  }
 
   console.log('[DB] Database initialized successfully with sql.js')
   return dbInstance
@@ -668,17 +676,17 @@ function getInlineSchema(): string {
       ('acc-misc-exp', '6007', 'General Expenses',     'expense',  0, 1, datetime('now','localtime'));
 
     INSERT OR IGNORE INTO settings VALUES
-      ('company_name',       'Al-Deewan Brand'),
+      ('company_name',       'My Store'),
       ('company_address',    'Lahore, Pakistan'),
       ('company_phone',      ''),
       ('currency',           'PKR'),
       ('currency_symbol',    'Rs.'),
-      ('receipt_footer',     'Thank you for shopping at Al-Deewan Brand!'),
+      ('receipt_footer',     'Thank you for your purchase!'),
       ('tax_rate',           '0'),
       ('receipt_printer',    '80mm'),
       ('discount_limit_sp',  '10'),
       ('discount_limit_mgr', '20'),
-      ('invoice_prefix',     'AD'),
+      ('invoice_prefix',     'INV'),
       ('purchase_prefix',    'PO'),
       ('return_prefix',      'RET'),
       ('db_version',         '1');
@@ -780,7 +788,7 @@ function seedDefaultUsers(database: DatabaseWrapper): void {
   `).run(uuidv4(), now)
 
   // Sample brands
-  const brands = ['Al-Deewan', 'Alkaram', 'Safa Noor', 'Sapphire', 'Gul Ahmed', 'Khaadi', 'Lakhani', 'Bonanza']
+  const brands = ['House Brand', 'Alkaram', 'Safa Noor', 'Sapphire', 'Gul Ahmed', 'Khaadi', 'Lakhani', 'Bonanza']
   for (const brand of brands) {
     database.prepare('INSERT OR IGNORE INTO brands (id, name) VALUES (?, ?)').run(uuidv4(), brand)
   }
@@ -799,6 +807,10 @@ export function closeDatabase(): void {
     dbInstance.close()
     dbInstance = null
   }
+}
+
+export function runDemoSeed(mode: 'if_empty' | 'force' = 'force') {
+  return seedDemoData(getDB(), mode)
 }
 
 // ---------------------------------------------------------------

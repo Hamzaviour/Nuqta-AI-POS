@@ -128,6 +128,8 @@ const api = {
     ipcRenderer.invoke('maintenance:reindex', requestingUserId),
   backupDatabase: (requestingUserId: string) =>
     ipcRenderer.invoke('maintenance:backup', requestingUserId),
+  seedDemoData: (requestingUserId: string, mode?: 'if_empty' | 'force') =>
+    ipcRenderer.invoke('maintenance:seed-demo-data', requestingUserId, mode),
 
   // ONLINE & WHATSAPP ORDERS (Phase 2)
   getOnlineOrders: (statusFilter?: string) =>
