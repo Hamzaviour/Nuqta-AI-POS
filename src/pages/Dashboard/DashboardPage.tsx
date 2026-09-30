@@ -180,9 +180,9 @@ export default function DashboardPage() {
               {greeting()}, {currentUser?.name}
             </h2>
             <span style={{
-              background: 'rgba(196, 30, 58, 0.1)',
+              background: 'rgba(47, 75, 245, 0.1)',
               color: 'var(--color-primary)',
-              border: '1px solid rgba(196, 30, 58, 0.25)',
+              border: '1px solid rgba(47, 75, 245, 0.25)',
               padding: '2px 8px',
               borderRadius: 'var(--radius-full)',
               fontSize: '0.7rem',

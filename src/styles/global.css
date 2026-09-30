@@ -1,37 +1,46 @@
 /* ============================================================
-   Al-Deewan POS — Modern Luxury Design System
-   Brand: Crimson Red, Deep Onyx, Emerald, Gold & Ultra-Clean Glass
+   Nuqta AI POS — Design System
+   Brand: Cobalt (primary), Saffron "nuqta" accent, Midnight Ink surfaces
    ============================================================ */
 
 /* ---- TOKENS ---- */
 :root {
   /* Brand Colors */
-  --color-primary:        #C41E3A;
-  --color-primary-dark:   #9A1028;
-  --color-primary-light:  #E63946;
-  --color-primary-10:     rgba(196, 30, 58, 0.08);
-  --color-primary-20:     rgba(196, 30, 58, 0.16);
-  --color-primary-30:     rgba(196, 30, 58, 0.25);
-  --color-primary-glow:   0 0 20px rgba(196, 30, 58, 0.28);
+  --color-primary:        #2F4BF5;
+  --color-primary-dark:   #1E30C4;
+  --color-primary-light:  #5B78FF;
+  --color-primary-10:     rgba(47, 75, 245, 0.08);
+  --color-primary-20:     rgba(47, 75, 245, 0.16);
+  --color-primary-30:     rgba(47, 75, 245, 0.25);
+  --color-primary-glow:   0 0 20px rgba(47, 75, 245, 0.28);
 
-  /* Gold Luxury Accent */
-  --color-gold:           #D4AF37;
-  --color-gold-light:     #F3C64F;
-  --color-gold-10:        rgba(212, 175, 55, 0.12);
+  /* Saffron accent — the "nuqta" (point) of the brand */
+  --color-accent:         #FFB224;
+  --color-accent-light:   #FFC857;
+  --color-accent-10:      rgba(255, 178, 36, 0.12);
+  --color-gold:           var(--color-accent);
+  --color-gold-light:     var(--color-accent-light);
+  --color-gold-10:        var(--color-accent-10);
+
+  /* Midnight Ink (login, nav, top bar) */
+  --color-ink-900:        #060918;
+  --color-ink-800:        #0B1024;
+  --color-ink-700:        #121936;
+  --color-ink-600:        #1B2347;
 
   /* Surface */
-  --color-bg:             #F8FAFC;
+  --color-bg:             #F5F7FB;
   --color-surface:        #FFFFFF;
   --color-surface-2:      #F1F5F9;
   --color-surface-3:      #E2E8F0;
   --color-surface-card:   #FFFFFF;
 
   /* Sidebar/Nav */
-  --color-nav-bg:         #0A0F1D;
-  --color-nav-bg-2:       #111827;
+  --color-nav-bg:         #0B1024;
+  --color-nav-bg-2:       #121936;
   --color-nav-border:     rgba(255, 255, 255, 0.08);
   --color-nav-text:       rgba(255, 255, 255, 0.70);
-  --color-nav-active:     #C41E3A;
+  --color-nav-active:     #2F4BF5;
   --color-nav-hover:      rgba(255, 255, 255, 0.08);
 
   /* Text */
@@ -61,7 +70,7 @@
   /* Border */
   --color-border:         #E2E8F0;
   --color-border-subtle:  #F1F5F9;
-  --color-border-focus:   #C41E3A;
+  --color-border-focus:   #2F4BF5;
 
   /* Shadows (Modern layered softness) */
   --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.04);
@@ -124,6 +133,21 @@ body {
 #root { height: 100%; display: flex; flex-direction: column; }
 input, textarea, select { user-select: text; }
 
+/* Keyboard focus ring — this is a keyboard-first app */
+:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+.form-input:focus-visible, .form-select:focus-visible { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ---- TYPOGRAPHY ---- */
 h1, h2, h3, h4, .brand-font {
   font-family: var(--font-display);
@@ -157,7 +181,7 @@ p  { line-height: 1.6; }
 .app-nav {
   width: var(--nav-width);
   background: var(--color-nav-bg);
-  background: linear-gradient(180deg, #070B16 0%, #0D1322 100%);
+  background: linear-gradient(180deg, var(--color-ink-800) 0%, var(--color-ink-900) 100%);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -181,7 +205,7 @@ p  { line-height: 1.6; }
   width: 44px;
   height: 44px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 10px rgba(196, 30, 58, 0.6));
+  filter: drop-shadow(0 2px 10px rgba(47, 75, 245, 0.6));
 }
 
 .app-nav-logo-text {
@@ -202,6 +226,68 @@ p  { line-height: 1.6; }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-top: 2px;
+}
+
+.app-nav-brand {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--color-nav-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.app-nav-terminal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.app-nav-terminal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+  flex-shrink: 0;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  color: #fff;
+  background: var(--color-ink-800);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.app-topbar-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.app-topbar-crumb {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
 }
 
 .nav-section-label {
@@ -237,12 +323,13 @@ p  { line-height: 1.6; }
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #C41E3A 0%, #A31229 100%);
+  background: linear-gradient(90deg, rgba(47, 75, 245, 0.42) 0%, rgba(47, 75, 245, 0.14) 100%);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 4px 16px rgba(196, 30, 58, 0.45);
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(124, 149, 255, 0.28), 0 6px 18px rgba(20, 30, 120, 0.35);
+  border-color: transparent;
 }
+.nav-item.active .nav-item-icon { color: var(--color-accent); }
 
 .nav-item.active::before {
   content: '';
@@ -251,7 +338,8 @@ p  { line-height: 1.6; }
   top: 25%;
   height: 50%;
   width: 3px;
-  background: #fff;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px rgba(255, 178, 36, 0.7);
   border-radius: 0 4px 4px 0;
 }
 
@@ -308,7 +396,7 @@ p  { line-height: 1.6; }
   width: 34px;
   height: 34px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #C41E3A, #7A0015);
+  background: linear-gradient(135deg, #2F4BF5, #1B2A9E);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,14 +506,14 @@ p  { line-height: 1.6; }
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #C41E3A 0%, #A8142C 100%);
+  background: linear-gradient(135deg, #2F4BF5 0%, #2640DB 100%);
   color: #fff;
-  border-color: #9A1028;
-  box-shadow: 0 2px 8px rgba(196, 30, 58, 0.25);
+  border-color: #1E30C4;
+  box-shadow: 0 2px 8px rgba(47, 75, 245, 0.25);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #D42644 0%, #B81932 100%);
-  box-shadow: 0 4px 14px rgba(196, 30, 58, 0.4);
+  background: linear-gradient(135deg, #4561FF 0%, #2F4BF5 100%);
+  box-shadow: 0 4px 14px rgba(47, 75, 245, 0.4);
 }
 
 .btn-secondary {
@@ -715,7 +803,7 @@ p  { line-height: 1.6; }
   text-transform: uppercase;
   border: 1px solid transparent;
 }
-.badge-primary  { background: var(--color-primary-10); color: var(--color-primary); border-color: rgba(196,30,58,0.2); }
+.badge-primary  { background: var(--color-primary-10); color: var(--color-primary); border-color: rgba(47, 75, 245,0.2); }
 .badge-success  { background: var(--color-success-bg); color: var(--color-success); border-color: var(--color-success-border); }
 .badge-warning  { background: var(--color-warning-bg); color: #B45309; border-color: var(--color-warning-border); }
 .badge-danger   { background: var(--color-danger-bg);  color: var(--color-danger);  border-color: var(--color-danger-border); }
@@ -876,8 +964,8 @@ p  { line-height: 1.6; }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(196, 30, 58, 0.3); }
-  50%      { box-shadow: 0 0 25px rgba(196, 30, 58, 0.6); }
+  0%, 100% { box-shadow: 0 0 15px rgba(47, 75, 245, 0.3); }
+  50%      { box-shadow: 0 0 25px rgba(47, 75, 245, 0.6); }
 }
 @keyframes shimmer {
   0%   { background-position: -200% 0; }

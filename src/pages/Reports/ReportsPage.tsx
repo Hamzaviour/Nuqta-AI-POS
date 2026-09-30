@@ -1064,7 +1064,7 @@ function ProfitLossReportTab() {
 
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>Gross Margin</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#F1C40F' }}>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFB224' }}>
                   {report.gross_margin_pct?.toFixed(1) || '0.0'}%
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>
@@ -1221,7 +1221,7 @@ function FinancialAnalyticsTab() {
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `AlDeewan_Financial_Analytics_${fromDate}_to_${toDate}.csv`)
+    link.setAttribute('download', `Financial_Analytics_${fromDate}_to_${toDate}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

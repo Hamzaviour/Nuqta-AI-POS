@@ -39,15 +39,15 @@ let currentPort = 8080
 const activeSessions = new Set<string>()
 
 /**
- * Locate and return the official Al-Deewan brand logo buffer
+ * Locate and return the Nuqta brand mark
  */
 function getBrandLogoBuffer(): { buffer: Buffer; mimeType: string } | null {
   const possiblePaths = [
-    path.join(__dirname, '../../src/assets/logo.png'),
+    path.join(__dirname, '../../src/assets/brand/nuqta-mark.png'),
     path.join(__dirname, '../../resources/logo.png'),
     path.join(__dirname, '../../resources/icon-square.png'),
     path.join(__dirname, '../../resources/icon.png'),
-    path.join(process.cwd(), 'src/assets/logo.png'),
+    path.join(process.cwd(), 'src/assets/brand/nuqta-mark.png'),
     path.join(process.cwd(), 'resources/icon-square.png'),
     path.join(process.cwd(), 'resources/icon.png')
   ]
@@ -222,7 +222,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     res.writeHead(200)
     res.end(JSON.stringify({
       app: 'al-deewan-pos-master',
-      name: 'Al-Deewan Master Terminal 1',
+      name: 'Nuqta Master Terminal 1',
       port: currentPort,
       ips: getLocalIpAddresses(),
       timestamp: Date.now()
@@ -310,7 +310,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   if (pathname === '/api/store-info') {
     setCorsAndHeaders(res)
     try {
-      const storeName = getSetting('store_name') || 'Al-Deewan Clothing & Garments'
+      const storeName = getSetting('store_name') || getSetting('company_name') || 'My Store'
       const phone = getSetting('store_phone') || ''
       const address = getSetting('store_address') || ''
       res.writeHead(200)
@@ -379,7 +379,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
       const categories = getAllCategories()
       const brands = getAllBrands()
       const customers = getAllCustomers()
-      const storeName = getSetting('store_name') || 'Al-Deewan Clothing & Garments'
+      const storeName = getSetting('store_name') || getSetting('company_name') || 'My Store'
       const phone = getSetting('store_phone') || ''
       const address = getSetting('store_address') || ''
 
@@ -896,7 +896,7 @@ function renderMobileAppHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Al-Deewan POS — Mobile Executive & Register Portal</title>
+  <title>Nuqta AI POS — Mobile Portal</title>
   <meta name="theme-color" content="#FFFFFF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -910,13 +910,13 @@ function renderMobileAppHtml(): string {
       --card-border: #E2E8F0;
       --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
       --card-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.08);
-      --primary: #059669;
-      --primary-dark: #047857;
-      --primary-light: #ECFDF5;
-      --primary-glow: rgba(16, 185, 129, 0.25);
-      --primary-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
-      --accent: #4F46E5;
-      --accent-gradient: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+      --primary: #2F4BF5;
+      --primary-dark: #1E30C4;
+      --primary-light: #EEF1FF;
+      --primary-glow: rgba(47, 75, 245, 0.25);
+      --primary-gradient: linear-gradient(135deg, #5B78FF 0%, #2F4BF5 100%);
+      --accent: #F59E0B;
+      --accent-gradient: linear-gradient(135deg, #FFC857 0%, #FF9A1F 100%);
       --danger: #DC2626;
       --warning: #D97706;
       --info: #0284C7;
@@ -1685,9 +1685,9 @@ function renderMobileAppHtml(): string {
   <!-- HEADER -->
   <header class="app-header">
     <div class="logo-container">
-      <img id="brand-logo-img" class="brand-logo-img" src="/api/logo" alt="Al-Deewan Logo" />
+      <img id="brand-logo-img" class="brand-logo-img" src="/api/logo" alt="Nuqta" />
       <div>
-        <div class="logo-title" id="header-store-name">Al-Deewan POS</div>
+        <div class="logo-title" id="header-store-name">Nuqta AI POS</div>
         <div class="logo-subtitle" id="header-user-role">Mobile Register Portal</div>
       </div>
     </div>
@@ -1707,8 +1707,8 @@ function renderMobileAppHtml(): string {
     <!-- SCREEN 1: PIN LOCK / LOGIN -->
     <div id="screen-pin">
       <div class="login-brand-box">
-        <img class="login-logo" src="/api/logo" alt="Al-Deewan Emblem" />
-        <div class="pin-title">Al-Deewan POS Portal</div>
+        <img class="login-logo" src="/api/logo" alt="Nuqta" />
+        <div class="pin-title">Nuqta AI POS Portal</div>
         <div class="pin-desc">Enter your 4-digit Staff or Owner PIN to start billing and access live store controls</div>
       </div>
       <div class="pin-dots">
@@ -2187,7 +2187,7 @@ function renderMobileAppHtml(): string {
 
       <div class="sheet-body" id="printable-receipt">
         <div style="text-align: center; border-bottom: 1px dashed var(--card-border); padding-bottom: 10px; margin-bottom: 10px;">
-          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="modal-receipt-store-name">Al-Deewan POS</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text);" id="modal-receipt-store-name">Nuqta AI POS</div>
           <div style="font-size: 11px; color: var(--text-muted);" id="modal-receipt-store-address">Clothing & Garments</div>
         </div>
 
@@ -2347,7 +2347,7 @@ function renderMobileAppHtml(): string {
     let allOrders = [];
     let selectedInvoiceForModal = null;
     let expectedCashAmount = 0;
-    let storeMeta = { storeName: 'Al-Deewan POS', phone: '', address: '' };
+    let storeMeta = { storeName: 'Nuqta AI POS', phone: '', address: '' };
 
     function fmt(num) {
       const val = Number(num) || 0;

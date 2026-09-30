@@ -1,5 +1,5 @@
 /**
- * Al-Deewan Multi-Terminal Network Sync Adapter
+ * Nuqta Multi-Terminal Network Sync Adapter
  * Seamlessly routes IPC vs LAN RPC calls depending on whether this system
  * is configured as Master Node (Main Windows PC) or Satellite Client (Win / Mac)
  */
@@ -12,6 +12,8 @@ export interface TerminalConfig {
   autoDiscover: boolean
 }
 
+// Legacy key name kept so terminals upgraded from earlier builds keep their config.
+// Legacy key name kept so terminals upgraded from earlier builds keep their config.
 const STORAGE_KEY = 'aldeewan_terminal_config'
 
 /**

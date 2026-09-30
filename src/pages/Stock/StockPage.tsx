@@ -235,7 +235,7 @@ export default function StockPage() {
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `aldeewan_inventory_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute('download', `inventory_${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -1241,7 +1241,7 @@ function ItemPerformanceAnalytics({ canViewCost, canViewProfit }: { canViewCost:
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `AlDeewan_Item_Sales_Performance_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute('download', `Item_Sales_Performance_${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -1739,13 +1739,13 @@ function BulkImportModal({ onClose, onImported }: { onClose: () => void; onImpor
 
   const downloadTemplate = () => {
     const template = `Part Number,Name,Barcode,Brand Name,Category Name,Size Variant,Cost Price,Retail Price,Quantity
-AD-LAWN-001,Al-Deewan Summer Lawn 3pc,890111222,Al-Deewan,Unstitched,Unstitched,2200,3800,20
-AD-KURTI-002,Embroidered Lawn Kurti,890333444,Al-Deewan,Pret,Medium,1500,2800,15`
+AD-LAWN-001,Summer Lawn 3pc,890111222,Alkaram,Unstitched,Unstitched,2200,3800,20
+AD-KURTI-002,Embroidered Lawn Kurti,890333444,Khaadi,Pret,Medium,1500,2800,15`
     const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
-    link.setAttribute('download', 'aldeewan_product_import_template.csv')
+    link.setAttribute('download', 'product_import_template.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -1850,7 +1850,7 @@ AD-KURTI-002,Embroidered Lawn Kurti,890333444,Al-Deewan,Pret,Medium,1500,2800,15
           <textarea
             className="form-input font-mono"
             rows={4}
-            placeholder="Part Number,Name,Barcode,Brand,Category,Size,Cost,Retail,Quantity&#10;AD-101,Lawn 3pc,89011,Al-Deewan,Summer,Unstitched,2000,3500,10"
+            placeholder="Part Number,Name,Barcode,Brand,Category,Size,Cost,Retail,Quantity&#10;AD-101,Lawn 3pc,89011,Alkaram,Summer,Unstitched,2000,3500,10"
             value={csvText}
             onChange={e => { setCsvText(e.target.value); parseCSV(e.target.value) }}
             style={{ fontSize: '0.75rem', resize: 'vertical' }}
@@ -2068,7 +2068,7 @@ function SupplierDetailsView({ canEdit, canViewCost }: { canEdit: boolean; canVi
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `aldeewan_suppliers_directory_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute('download', `suppliers_directory_${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

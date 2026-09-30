@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useStoreName } from '../../hooks/useStoreName'
 import {
   Barcode as BarcodeIcon, Search, Printer, Settings, CheckSquare,
   Square, RefreshCw, Eye, Tag, LayoutGrid, Check
@@ -249,7 +250,7 @@ export default function BarcodePage() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {[
-                      { key: 'show_brand', label: 'Show Brand Title (Al-Deewan)' },
+                      { key: 'show_brand', label: 'Show Store Name' },
                       { key: 'show_price', label: 'Show Retail Price' },
                       { key: 'show_size', label: 'Show Size Variant' },
                       { key: 'show_barcode_text', label: 'Show SKU Under Barcode' },
@@ -338,6 +339,7 @@ export default function BarcodePage() {
 // SINGLE THERMAL LABEL PREVIEW (Screen Canvas)
 // ============================================================
 function SingleLabelPreview({ item, config }: { item: Item; config: BarcodeLabelConfig }) {
+  const storeName = useStoreName()
   const code = item.barcode || item.part_number
   return (
     <div style={{
@@ -353,7 +355,7 @@ function SingleLabelPreview({ item, config }: { item: Item; config: BarcodeLabel
           fontSize: '0.625rem', fontWeight: 800, textAlign: 'center',
           letterSpacing: '0.5px', textTransform: 'uppercase', color: '#000'
         }}>
-          AL-DEEWAN
+          {storeName}
         </div>
       )}
 
@@ -399,6 +401,7 @@ function SingleLabelPreview({ item, config }: { item: Item; config: BarcodeLabel
 // SINGLE THERMAL LABEL PRINT (Optimized for Thermal Paper)
 // ============================================================
 function SingleLabelPrint({ item, config }: { item: Item; config: BarcodeLabelConfig }) {
+  const storeName = useStoreName()
   const code = item.barcode || item.part_number
   const dims = {
     '50x25': { w: '48mm', h: '24mm' },
@@ -416,7 +419,7 @@ function SingleLabelPrint({ item, config }: { item: Item; config: BarcodeLabelCo
     }}>
       {config.show_brand && (
         <div style={{ fontSize: '7pt', fontWeight: 900, textAlign: 'center', textTransform: 'uppercase' }}>
-          AL-DEEWAN
+          {storeName}
         </div>
       )}
       <div style={{

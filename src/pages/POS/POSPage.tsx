@@ -14,7 +14,7 @@ import { useHotkeys } from '../../contexts/HotkeyContext'
 import type { Item, CartItem, Customer, Invoice, InvoiceItem, Expense, CreateExpenseInput, POSSummary } from '../../types'
 import { ReceiptPreviewModal } from '../../components/common/ReceiptPreviewModal'
 import { VoicePOSModal } from '../../components/voice/VoicePOSModal'
-import defaultInvoiceLogo from '../../assets/invoice_logo.png'
+import defaultInvoiceLogo from '../../assets/brand/nuqta-receipt.png'
 import defaultWhatsAppQR from '../../assets/whatsapp_qr.png'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
@@ -1421,7 +1421,7 @@ export default function POSPage() {
               onClick={() => setShowCustomer(true)}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                boxShadow: source !== 'instore' ? '0 0 0 2px rgba(196,30,58,0.3)' : 'none',
+                boxShadow: source !== 'instore' ? '0 0 0 2px rgba(47, 75, 245,0.3)' : 'none',
                 fontWeight: source !== 'instore' ? 700 : 600
               }}
             >

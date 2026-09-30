@@ -1,8 +1,8 @@
-# Al-Deewan POS System v2.0.0 🛍️
+# Nuqta AI POS v2.0.0
 
 <div align="center">
-  <img src="resources/icon.png" alt="Al-Deewan Logo" width="120" />
-  <h3>Enterprise Wholesale & Retail Clothing Point of Sale (POS) — Version 2.0.0</h3>
+  <img src="resources/icon.png" alt="Nuqta logo" width="120" />
+  <h3>Every sale, to the point. Retail & wholesale POS — v2.0.0</h3>
   <p>A mission-critical desktop Point of Sale, Inventory Management, Double-Entry Accounting, and Remote Cloud Management ERP built with <b>Electron, React 18, TypeScript, and Vite</b>.</p>
 </div>
 
@@ -86,8 +86,8 @@ This repository includes a preconfigured GitHub Actions workflow (`.github/workf
    - Go to your repository on GitHub → **Actions** tab.
    - Click on the running/completed workflow **Build Production Installers**.
    - Download the generated installer ZIPs from the **Artifacts** section:
-     - `Al-Deewan-POS-Windows-Installer-v2.0` (Contains `Al-Deewan-Setup-2.0.0.exe` and `Al-Deewan-Portable-2.0.0.exe`)
-     - `Al-Deewan-POS-macOS-Installer-v2.0` (Contains `Al-Deewan-POS-2.0.0-Mac-*.dmg`)
+     - `Nuqta-AI-POS-Windows-Installer-v2.0` (Contains `Nuqta-Setup-2.0.0.exe` and `Nuqta-Portable-2.0.0.exe`)
+     - `Nuqta-AI-POS-macOS-Installer-v2.0` (Contains `Nuqta-AI-POS-2.0.0-Mac-*.dmg`)
 
 3. **Automatic GitHub Releases**:
    - Tagging a commit (e.g., `git tag v2.0.0 && git push origin --tags`) will automatically create a formal GitHub Release and publish all installer binaries for direct one-click public download!
@@ -126,7 +126,7 @@ npm run build:mac
 ## 📁 Project Structure
 
 ```
-Al-Deewan POS System/
+Nuqta AI POS/
 ├── .github/workflows/
 │   └── build-installers.yml # CI/CD GitHub Actions automated packaging workflow
 ├── electron/
@@ -158,5 +158,5 @@ Al-Deewan POS System/
 
 ## 📄 License
 
-This project is proprietary software created for **Al-Deewan Brand**. All rights reserved.
+This project is proprietary software created for **Nuqta**. All rights reserved.
 

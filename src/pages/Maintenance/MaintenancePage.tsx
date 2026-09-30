@@ -14,7 +14,7 @@ import type {
   GDriveConfig
 } from '../../types'
 import { getTerminalConfig, saveTerminalConfig, initTerminalSync } from '../../services/apiAdapter'
-import defaultInvoiceLogo from '../../assets/invoice_logo.png'
+import defaultInvoiceLogo from '../../assets/brand/nuqta-receipt.png'
 import defaultWhatsAppQR from '../../assets/whatsapp_qr.png'
 import toast from 'react-hot-toast'
 
@@ -1303,7 +1303,7 @@ function SystemSetupTab() {
               <span style={{ fontSize: '0.6875rem', color: '#888', marginTop: 8 }}>
                 {settings['receipt_qr_image'] === 'none'
                   ? '✕ QR Code Disabled'
-                  : (settings['receipt_qr_image'] ? '✓ Custom QR Code Active' : '✓ Default Al-Deewan WhatsApp Community QR')}
+                  : (settings['receipt_qr_image'] ? '✓ Custom QR Code Active' : '✓ Default WhatsApp Community QR')}
               </span>
             </div>
 
@@ -1313,7 +1313,7 @@ function SystemSetupTab() {
                 Printed Customer Receipt QR Code
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                This QR code is printed at the bottom of customer receipts so buyers can scan and join the <strong>Al-Deewan WhatsApp VIP Community</strong> for new stock updates, catalog drops, and wholesale discounts.
+                This QR code is printed at the bottom of customer receipts so buyers can scan and join your <strong>WhatsApp VIP Community</strong> for new stock updates, catalog drops, and wholesale discounts.
               </div>
 
               <div className="form-group" style={{ marginTop: 2, marginBottom: 4 }}>
@@ -1349,7 +1349,7 @@ function SystemSetupTab() {
                     className="btn btn-secondary btn-sm"
                     onClick={() => {
                       set('receipt_qr_image', '')
-                      toast.success('Reverted to default Al-Deewan WhatsApp QR')
+                      toast.success('Reverted to default WhatsApp QR')
                     }}
                   >
                     <RefreshCw size={13} /> Reset to Default Community QR
@@ -2781,11 +2781,11 @@ function BackupTab() {
     if (data.isTestPing) {
       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Google Drive Webhook Connected!' })).setMimeType(ContentService.MimeType.JSON);
     }
-    var folderName = data.folderName || 'Al-Deewan POS Backups';
+    var folderName = data.folderName || 'Nuqta AI POS Backups';
     var folders = DriveApp.getFoldersByName(folderName);
     var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
     var decoded = Utilities.base64Decode(data.fileData);
-    var blob = Utilities.newBlob(decoded, data.mimeType || 'application/x-sqlite3', data.filename || 'al-deewan-backup.db');
+    var blob = Utilities.newBlob(decoded, data.mimeType || 'application/x-sqlite3', data.filename || 'nuqta-backup.db');
     var file = folder.createFile(blob);
     return ContentService.createTextOutput(JSON.stringify({ success: true, fileId: file.getId(), url: file.getUrl() })).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -2985,7 +2985,7 @@ function BackupTab() {
           {/* Action Bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 4 }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-              Folder: <code>Google Drive / {gdriveConfig?.folderName || 'Al-Deewan POS Backups'} /</code>
+              Folder: <code>Google Drive / {gdriveConfig?.folderName || 'Nuqta AI POS Backups'} /</code>
             </div>
             <button
               type="button"

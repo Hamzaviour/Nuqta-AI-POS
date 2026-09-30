@@ -89,7 +89,7 @@ export async function transcribeAudioBuffer(
     }
 
     // 3. Prompt context for POS domain terminology
-    const posPrompt = 'Al-Deewan POS, clothing, lawn, suit, kurta, cotton, dettol, surf excel, lux, discount, cash, jazzcash, easypaisa, rupay, proceed, dalo, bill'
+    const posPrompt = 'Nuqta AI POS, clothing, lawn, suit, kurta, cotton, dettol, surf excel, lux, discount, cash, jazzcash, easypaisa, rupay, proceed, dalo, bill'
     postDataHeader.push(Buffer.from(
       `--${boundary}${crlf}` +
       `Content-Disposition: form-data; name="prompt"${crlf}${crlf}` +
@@ -116,7 +116,7 @@ export async function transcribeAudioBuffer(
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
         'Content-Length': fullBody.length,
-        'User-Agent': 'Al-Deewan-POS-Voice-Engine/1.0'
+        'User-Agent': 'Nuqta-AI-POS-Voice-Engine/1.0'
       },
       timeout: 12000
     }

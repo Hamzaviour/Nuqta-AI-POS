@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useHotkeys } from '../../contexts/HotkeyContext'
-import logoImg from '../../assets/logo.png'
+import { NuqtaLogo } from '../brand/NuqtaLogo'
 
 interface NavGroup {
   label: string
@@ -89,14 +89,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const roleBadgeStyle = (role: string) => {
     switch (role) {
-      case 'owner': return { bg: 'rgba(196,30,58,0.2)', color: '#FF758F', border: 'rgba(196,30,58,0.4)' }
-      case 'manager': return { bg: 'rgba(2,132,199,0.2)', color: '#38BDF8', border: 'rgba(2,132,199,0.4)' }
+      case 'owner': return { bg: 'rgba(47, 75, 245,0.2)', color: '#9DB0FF', border: 'rgba(47, 75, 245,0.4)' }
+      case 'manager': return { bg: 'rgba(139,92,246,0.2)', color: '#C4B5FD', border: 'rgba(139,92,246,0.4)' }
       default: return { bg: 'rgba(16,185,129,0.2)', color: '#34D399', border: 'rgba(16,185,129,0.4)' }
     }
   }
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+
+  const currentGroup = NAV_GROUPS.find(g => g.items.some(i => isActive(i.path)))?.label
+  const currentPage = NAV_GROUPS.flatMap(g => g.items).find(i => isActive(i.path))
 
   const isVisible = (perm?: string) => {
     if (currentUser.role === 'owner') return true
@@ -106,42 +109,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
-      {/* ---- MODERN LUXURY SIDEBAR ---- */}
+      {/* ---- SIDEBAR ---- */}
       <nav className="app-nav">
-        {/* Terminal Online Status Header above Core Operations */}
-        <div style={{
-          padding: '14px 16px',
-          borderBottom: '1px solid var(--color-nav-border)',
-          background: 'rgba(255, 255, 255, 0.02)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10
-        }}>
-          <span style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#10B981',
-            boxShadow: '0 0 8px #10B981',
-            flexShrink: 0
-          }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#FFFFFF',
-              letterSpacing: '0.04em'
-            }}>
-              TERMINAL 01:
-            </span>
-            <span style={{
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              color: '#34D399',
-              letterSpacing: '0.04em'
-            }}>
-              SYSTEM ONLINE
-            </span>
+        {/* Brand + terminal status */}
+        <div className="app-nav-brand">
+          <NuqtaLogo size={30} descriptor="AI POS" />
+          <div className="app-nav-terminal" title="This terminal is online">
+            <span className="app-nav-terminal-dot" />
+            <span>Terminal 01</span>
+            <span style={{ marginLeft: 'auto', color: '#6EE7B7' }}>Online</span>
           </div>
         </div>
 
@@ -211,70 +187,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* ---- MAIN CONTENT & BRAND TOP BAR ---- */}
       <div className="app-content">
-        {/* Brand Top Header Banner Bar */}
-        <div style={{
-          background: 'linear-gradient(90deg, #070B16 0%, #111827 50%, #070B16 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '6px 24px',
-          minHeight: 58,
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          flexShrink: 0,
-          color: '#fff',
-          zIndex: 10,
-          position: 'relative'
-        }}>
-          {/* Left Grid Placeholder for symmetry */}
-          <div style={{ justifySelf: 'start' }} />
-
-          {/* Center: AL-DEEWAN WHOLESALE & RETAIL POS Brand Display (Shifted slightly left) */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 14,
-            justifySelf: 'center',
-            transform: 'translateX(-45px)'
-          }}>
-            <img
-              src={logoImg}
-              alt="Al-Deewan"
-              style={{
-                width: 48,
-                height: 48,
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 3px 12px rgba(196,30,58,0.7))'
-              }}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', lineHeight: 1.15 }}>
-              <span style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.25rem',
-                fontWeight: 900,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                background: 'linear-gradient(180deg, #FFFFFF 30%, #E2E8F0 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))'
-              }}>
-                AL-DEEWAN
-              </span>
-              <span style={{
-                color: '#D4AF37',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase'
-              }}>
-                Wholesale & Retail POS
-              </span>
-            </div>
+        {/* Top bar: where you are + clock + logout */}
+        <div className="app-topbar">
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0 }}>
+            <span className="app-topbar-title">{currentPage?.label ?? 'Nuqta'}</span>
+            {currentGroup && <span className="app-topbar-crumb">{currentGroup}</span>}
           </div>
 
           {/* Right: Clock & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifySelf: 'end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -287,7 +208,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               borderRadius: 'var(--radius-sm)',
               fontFamily: 'var(--font-mono)'
             }}>
-              <Clock size={13} style={{ color: '#F1C40F' }} />
+              <Clock size={13} style={{ color: 'var(--color-accent)' }} />
               <span>{time.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
 

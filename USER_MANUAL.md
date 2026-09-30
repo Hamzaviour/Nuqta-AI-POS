@@ -1,4 +1,4 @@
-# Al-Deewan POS System — Comprehensive Operations & User Manual
+# Nuqta AI POS — Comprehensive Operations & User Manual
 
 **Version:** 2.0.0 Production Release  
 **Platform:** Windows 10/11 & macOS  
@@ -31,11 +31,11 @@
 
 # 1. System Overview & Architecture
 
-**Al-Deewan POS System** is a mission-critical desktop business management software built specifically for high-speed retail and wholesale garment businesses.
+**Nuqta AI POS** is a mission-critical desktop business management software built specifically for high-speed retail and wholesale garment businesses.
 
 ### Core Architecture Highlights:
 - **Embedded Zero-Config Database:** Runs on an embedded SQLite WebAssembly engine (`aldeewan-pos.db`). No external database servers (MySQL/SQL Server) or Python runtimes required.
-- **100% Offline Resilience:** Continues operating during internet outages. Local data persists securely in `%APPDATA%\Al-Deewan POS System`.
+- **100% Offline Resilience:** Continues operating during internet outages. Local data persists securely in `%APPDATA%\Nuqta AI POS`.
 - **Multi-Terminal LAN Sync:** Connect multiple billing counters across a store or warehouse over local Wi-Fi without cloud latency.
 - **Enterprise Accounting:** True double-entry ledger tracking for Accounts Receivable, Accounts Payable, Expenses, Cash, and Bank accounts.
 
@@ -44,7 +44,7 @@
 # 2. Getting Started & Initial Setup
 
 ### First Launch & Login
-1. Launch **Al-Deewan POS System** from your Desktop or Start Menu.
+1. Launch **Nuqta AI POS** from your Desktop or Start Menu.
 2. Select your user account on the lock screen and enter your **4-Digit Secret PIN**.
 3. **Default Owner Account:**
    - **Username:** `admin` / `owner`

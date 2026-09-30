@@ -44,15 +44,15 @@ jobs:
       - name: Upload Windows Installer Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Al-Deewan-POS-Windows-Installer-v2.0
-          path: dist/Al-Deewan-*.exe
+          name: Nuqta-AI-POS-Windows-Installer-v2.0
+          path: dist/Nuqta-*.exe
           if-no-files-found: error
 
       - name: Publish Windows Assets to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Al-Deewan-*.exe
+          files: dist/Nuqta-*.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -85,10 +85,10 @@ jobs:
       - name: Upload macOS Installer Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Al-Deewan-POS-macOS-Installer-v2.0
+          name: Nuqta-AI-POS-macOS-Installer-v2.0
           path: |
-            dist/Al-Deewan-POS-*.dmg
-            dist/Al-Deewan-POS-*.zip
+            dist/Nuqta-AI-POS-*.dmg
+            dist/Nuqta-AI-POS-*.zip
           if-no-files-found: error
 
       - name: Publish macOS Assets to GitHub Release
@@ -96,8 +96,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/Al-Deewan-POS-*.dmg
-            dist/Al-Deewan-POS-*.zip
+            dist/Nuqta-AI-POS-*.dmg
+            dist/Nuqta-AI-POS-*.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

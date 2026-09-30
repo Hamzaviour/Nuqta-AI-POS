@@ -1,6 +1,6 @@
 # Commercial Proposal & Complete Technical Specification
 
-**Project Title:** Al-Deewan POS System — Enterprise Wholesale & Retail Suite  
+**Project Title:** Nuqta AI POS — Enterprise Wholesale & Retail Suite  
 **Client / Business:** Fashion Retailers, Garment Wholesalers, Boutiques & Textile Stores  
 **Package:** Complete Production Software License & Onboarding Package  
 **Commercial Investment:** **Rs. 60,000 PKR** (All-Inclusive One-Time Package)  
@@ -9,19 +9,19 @@
 
 ## Executive Summary
 
-**Al-Deewan POS System** is a high-speed, enterprise-grade desktop business management platform developed specifically for fashion retailers, clothing manufacturers, fabric mills, wholesale distributors, and retail boutiques.
+**Nuqta AI POS** is a high-speed, enterprise-grade desktop business management platform developed specifically for fashion retailers, clothing manufacturers, fabric mills, wholesale distributors, and retail boutiques.
 
-Unlike generic POS systems that require recurring monthly SaaS subscription fees, constant internet connectivity, and external database servers, Al-Deewan operates **100% offline with zero cloud dependency**, features built-in **multi-terminal LAN synchronization**, **double-entry accounting**, **automated WhatsApp daily business reports**, and **Voice AI automation**.
+Unlike generic POS systems that require recurring monthly SaaS subscription fees, constant internet connectivity, and external database servers, Nuqta operates **100% offline with zero cloud dependency**, features built-in **multi-terminal LAN synchronization**, **double-entry accounting**, **automated WhatsApp daily business reports**, and **Voice AI automation**.
 
 ---
 
 ## Complete Feature Matrix & Granular Specification
 
-Below is an exhaustive breakdown of every module, subsystem, and micro-feature included in the Al-Deewan POS System:
+Below is an exhaustive breakdown of every module, subsystem, and micro-feature included in the Nuqta AI POS:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                             AL-DEEWAN POS SYSTEM — FULL MODULE MAP                               │
+│                             NUQTA AI POS — FULL MODULE MAP                               │
 ├───────────────────┬───────────────────┬───────────────────┬───────────────────┬──────────────────┤
 │ 1. Point of Sale  │ 2. Inventory &    │ 3. Purchases &    │ 4. Accounting &   │ 5. Security &    │
 │    Counter Billing│    Stock Catalog  │    Supply Chain   │    Financials     │    Administration│
@@ -177,7 +177,7 @@ Below is an exhaustive breakdown of every module, subsystem, and micro-feature i
 
 | # | Package Component / Deliverable | Included Value | Status |
 | :---: | :--- | :---: | :---: |
-| **1** | **Al-Deewan POS System Full Enterprise License**<br>• Lifetime Desktop License for Windows (10/11 64-bit) & macOS<br>• Unrestricted product catalog, unlimited invoices, unlimited customers | Rs. 40,000 | **INCLUDED** |
+| **1** | **Nuqta AI POS Full Enterprise License**<br>• Lifetime Desktop License for Windows (10/11 64-bit) & macOS<br>• Unrestricted product catalog, unlimited invoices, unlimited customers | Rs. 40,000 | **INCLUDED** |
 | **2** | **Multi-Terminal LAN Network Node System**<br>• Master Server + Multi-Terminal Counter Sync Engine<br>• Connect multiple billing counters across the shop over Wi-Fi | Rs. 10,000 | **INCLUDED** |
 | **3** | **Hardware & Peripherals Setup & Integration**<br>• 80mm/58mm Thermal Receipt Printer integration<br>• USB / Wireless Barcode Scanner setup<br>• Thermal Barcode Label Printer calibration (50x25mm / 40x28mm) | Rs. 5,000 | **INCLUDED** |
 | **4** | **Data Migration, Catalog Setup & Staff Training**<br>• Migration of previous software catalog, stock, and customers via CSV/SQL<br>• Complete onboarding & staff training session | Rs. 5,000 | **INCLUDED** |
@@ -212,6 +212,6 @@ Name: ____________________________________
 Signature: _______________________________  
 Date: ____________________________________  
 
-**For Al-Deewan POS Solutions:**  
+**For Nuqta:**  
 Authorized Signature: ______________________  
 Date: ____________________________________  

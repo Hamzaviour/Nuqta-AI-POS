@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Nuqta mark: a calligraphic nuqta (rhombus) that doubles as a price tag,
+       with a saffron "point" landing at its corner — the point of sale. -->
+  <defs>
+    <linearGradient id="nq-body" x1="80" y1="70" x2="360" y2="390" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C95FF"/>
+      <stop offset="0.5" stop-color="#3553F7"/>
+      <stop offset="1" stop-color="#1E2FC2"/>
+    </linearGradient>
+    <linearGradient id="nq-point" x1="340" y1="340" x2="450" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC857"/>
+      <stop offset="1" stop-color="#FF9A1F"/>
+    </linearGradient>
+    <mask id="nq-hole">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="222" cy="132" r="28" fill="#000"/>
+      <path d="M392 288 L496 392 L392 496 L288 392 Z" fill="#000"/>
+    </mask>
+  </defs>
+  <path mask="url(#nq-hole)" d="M222 48 L396 222 L222 396 L48 222 Z" fill="url(#nq-body)" stroke="url(#nq-body)" stroke-width="40" stroke-linejoin="round"/>
+  <path d="M392 322 L462 392 L392 462 L322 392 Z" fill="url(#nq-point)" stroke="url(#nq-point)" stroke-width="18" stroke-linejoin="round"/>
+</svg>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useStoreName } from '../../hooks/useStoreName'
 import {
   Store, BookOpen, Plus, Search, Calendar, FileText, ArrowUpRight,
   ArrowDownLeft, DollarSign, RefreshCw, Eye, CheckCircle2, AlertCircle,
@@ -996,6 +997,7 @@ function SupplierPaymentsView() {
 // 6. TRADING, PROFIT & LOSS STATEMENT
 // ============================================================
 function ProfitAndLossView() {
+  const storeName = useStoreName()
   const { currentUser } = useAuth()
   const [fromDate, setFromDate] = useState(new Date().toISOString().slice(0, 7) + '-01')
   const [toDate, setToDate] = useState(new Date().toISOString().slice(0, 10))
@@ -1038,7 +1040,7 @@ function ProfitAndLossView() {
       ) : report ? (
         <div className="card">
           <div className="card-header" style={{ textAlign: 'center', display: 'block', padding: '16px' }}>
-            <h3 style={{ margin: 0, fontWeight: 800 }}>AL-DEEWAN BRAND</h3>
+            <h3 style={{ margin: 0, fontWeight: 800, textTransform: 'uppercase' }}>{storeName}</h3>
             <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>
               Trading, Profit & Loss Statement ({report.from_date} to {report.to_date})
             </div>
@@ -1131,6 +1133,7 @@ function ProfitAndLossView() {
 // 7. PARTY STATEMENTS (CUSTOMER & SUPPLIER LEDGERS)
 // ============================================================
 function PartyStatementsView() {
+  const storeName = useStoreName()
   const { currentUser } = useAuth()
   const [partyType, setPartyType] = useState<'customer' | 'supplier'>('customer')
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -1255,7 +1258,7 @@ function PartyStatementsView() {
             <div style={{ padding: 24, borderBottom: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h2 style={{ margin: 0, fontWeight: 900, color: 'var(--color-primary)' }}>AL-DEEWAN BRAND</h2>
+                  <h2 style={{ margin: 0, fontWeight: 900, color: 'var(--color-primary)', textTransform: 'uppercase' }}>{storeName}</h2>
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
                     Wholesale Clothing · Lahore, Pakistan
                   </div>

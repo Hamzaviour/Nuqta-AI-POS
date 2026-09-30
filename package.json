@@ -1,9 +1,9 @@
 {
-  "name": "al-deewan-pos",
+  "name": "nuqta-ai",
   "version": "2.0.0",
-  "description": "Al-Deewan POS System v2.0.0 - Wholesale & Retail Point of Sale, Inventory Management, Accounting and Remote Live Portal",
+  "description": "Nuqta AI POS v2.0.0 - Retail & Wholesale Point of Sale, Inventory, Accounting and Remote Live Portal",
   "main": "out/main/index.js",
-  "author": "Al-Deewan Brand",
+  "author": "Nuqta",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
@@ -17,7 +17,8 @@
     "package:mac": "npm run build && electron-builder --mac --publish never",
     "package:all": "npm run build && electron-builder --win --mac --publish never",
     "package:win-dir": "npm run build && electron-builder --win --dir --publish never",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -52,9 +53,9 @@
     "vite": "5.1.4"
   },
   "build": {
-    "appId": "com.aldeewan.pos",
-    "productName": "Al-Deewan POS System",
-    "copyright": "Copyright © 2026 Al-Deewan Brand",
+    "appId": "com.nuqta.ai",
+    "productName": "Nuqta AI POS",
+    "copyright": "Copyright © 2026 Nuqta",
     "compression": "maximum",
     "asar": true,
     "directories": {
@@ -81,17 +82,17 @@
         }
       ],
       "icon": "resources/icon.ico",
-      "executableName": "AlDeewan",
-      "publisherName": "Al-Deewan",
-      "legalTrademarks": "Al-Deewan POS System"
+      "executableName": "Nuqta",
+      "publisherName": "Nuqta",
+      "legalTrademarks": "Nuqta AI POS"
     },
     "nsis": {
-      "artifactName": "Al-Deewan-Setup-${version}.${ext}",
+      "artifactName": "Nuqta-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Al-Deewan POS System",
+      "shortcutName": "Nuqta AI POS",
       "installerIcon": "resources/icon.ico",
       "uninstallerIcon": "resources/icon.ico",
       "installerHeaderIcon": "resources/icon.ico",
@@ -101,7 +102,7 @@
       "allowElevation": true
     },
     "portable": {
-      "artifactName": "Al-Deewan-Portable-${version}.${ext}"
+      "artifactName": "Nuqta-Portable-${version}.${ext}"
     },
     "mac": {
       "target": [
@@ -123,18 +124,18 @@
       ],
       "icon": "resources/icon.png",
       "category": "public.app-category.business",
-      "artifactName": "Al-Deewan-POS-${version}-Mac-${arch}.${ext}",
+      "artifactName": "Nuqta-AI-POS-${version}-Mac-${arch}.${ext}",
       "darkModeSupport": true,
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Al-Deewan POS uses the microphone for Voice AI invoicing and voice commands."
+        "NSMicrophoneUsageDescription": "Nuqta AI POS uses the microphone for Voice AI invoicing and voice commands."
       }
     },
     "dmg": {
-      "title": "Al-Deewan POS System ${version}",
+      "title": "Nuqta AI POS ${version}",
       "contents": [
         {
           "x": 130,

@@ -668,12 +668,12 @@ function getInlineSchema(): string {
       ('acc-misc-exp', '6007', 'General Expenses',     'expense',  0, 1, datetime('now','localtime'));
 
     INSERT OR IGNORE INTO settings VALUES
-      ('company_name',       'Al-Deewan Brand'),
+      ('company_name',       'My Store'),
       ('company_address',    'Lahore, Pakistan'),
       ('company_phone',      ''),
       ('currency',           'PKR'),
       ('currency_symbol',    'Rs.'),
-      ('receipt_footer',     'Thank you for shopping at Al-Deewan Brand!'),
+      ('receipt_footer',     'Thank you for shopping with us!'),
       ('tax_rate',           '0'),
       ('receipt_printer',    '80mm'),
       ('discount_limit_sp',  '10'),
@@ -686,7 +686,7 @@ function getInlineSchema(): string {
 }
 
 function hashPin(pin: string): string {
-  return crypto.createHash('sha256').update(pin + 'aldeewan-salt-2024').digest('hex')
+  return crypto.createHash('sha256').update(pin + 'aldeewan-salt-2024').digest('hex') // legacy salt: changing it would invalidate every stored PIN
 }
 
 function seedDefaultUsers(database: DatabaseWrapper): void {
@@ -780,7 +780,7 @@ function seedDefaultUsers(database: DatabaseWrapper): void {
   `).run(uuidv4(), now)
 
   // Sample brands
-  const brands = ['Al-Deewan', 'Alkaram', 'Safa Noor', 'Sapphire', 'Gul Ahmed', 'Khaadi', 'Lakhani', 'Bonanza']
+  const brands = ['Nishat', 'Alkaram', 'Safa Noor', 'Sapphire', 'Gul Ahmed', 'Khaadi', 'Lakhani', 'Bonanza']
   for (const brand of brands) {
     database.prepare('INSERT OR IGNORE INTO brands (id, name) VALUES (?, ?)').run(uuidv4(), brand)
   }

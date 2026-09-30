@@ -1,4 +1,4 @@
-// Al-Deewan POS — Shared TypeScript Types
+// Nuqta AI POS — Shared TypeScript Types
 
 export interface User {
   id: string

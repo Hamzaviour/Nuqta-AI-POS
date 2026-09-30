@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain, dialog, session, systemPreferences } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-
+import path from 'path'
+import fs from 'fs'
 // Enable Chromium Web Speech API and real microphone access
 app.commandLine.appendSwitch('enable-speech-dispatcher')
 app.commandLine.appendSwitch('enable-features', 'WebSpeechAPI,AudioCapture')
@@ -70,7 +70,7 @@ function createWindow(): void {
     minHeight: 700,
     show: false,
     autoHideMenuBar: true,
-    title: 'Al-Deewan POS System',
+    title: 'Nuqta AI POS',
     icon: iconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -102,10 +102,34 @@ function createWindow(): void {
   }
 }
 
-app.setName('Al-Deewan POS System')
+app.setName('Nuqta AI POS')
+
+/**
+ * The app was previously shipped as "Al-Deewan POS System". Renaming it moves
+ * Electron's userData folder, so on first launch copy the old data across.
+ * The legacy folder is left untouched as a backup.
+ */
+function migrateLegacyUserData(): void {
+  try {
+    const current = app.getPath('userData')
+    const legacy = path.join(app.getPath('appData'), 'Al-Deewan POS System')
+    const legacyDb = path.join(legacy, 'aldeewan-pos.db')
+    if (!fs.existsSync(legacyDb) || fs.existsSync(path.join(current, 'aldeewan-pos.db'))) return
+    fs.mkdirSync(current, { recursive: true })
+    for (const entry of fs.readdirSync(legacy)) {
+      if (/\.(db|json)$/i.test(entry)) {
+        fs.copyFileSync(path.join(legacy, entry), path.join(current, entry))
+      }
+    }
+    console.log('[Main] Migrated data from legacy Al-Deewan folder:', legacy)
+  } catch (err) {
+    console.error('[Main] Legacy data migration failed:', err)
+  }
+}
 
 app.whenReady().then(async () => {
-  electronApp.setAppUserModelId('com.aldeewan.pos')
+  electronApp.setAppUserModelId('com.nuqta.ai')
+  migrateLegacyUserData()
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
@@ -683,7 +707,7 @@ function registerIpcHandlers(): void {
     }
     const { filePath } = await dialog.showSaveDialog({
       title: 'Save Backup',
-      defaultPath: `al-deewan-backup-${new Date().toISOString().slice(0,10)}.db`,
+      defaultPath: `nuqta-backup-${new Date().toISOString().slice(0,10)}.db`,
       filters: [{ name: 'Database Backup', extensions: ['db'] }]
     })
     if (!filePath) return { success: false, error: 'Cancelled' }
@@ -1179,7 +1203,7 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('mobile:allow-firewall', async () => {
     try {
-      const psCommand = `Start-Process powershell -Verb runAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command netsh advfirewall firewall add rule name=\\"Al-Deewan POS Mobile Server\\" dir=in action=allow protocol=TCP localport=8080-8095 profile=any'`
+      const psCommand = `Start-Process powershell -Verb runAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command netsh advfirewall firewall add rule name=\\"Nuqta AI POS Mobile Server\\" dir=in action=allow protocol=TCP localport=8080-8095 profile=any'`
       const { exec } = require('child_process')
       exec(`powershell -Command "${psCommand}"`, (err: any) => {
         if (err) console.error('Firewall rule error:', err)

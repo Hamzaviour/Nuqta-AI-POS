@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useStoreName } from '../../hooks/useStoreName'
 import {
   MessageSquare, Search, Filter, Truck, CheckCircle2, Clock,
   AlertCircle, ExternalLink, RefreshCw, Send, User, Phone, MapPin, Package, RotateCcw
@@ -11,6 +12,7 @@ const fmt = (n: number) =>
   `Rs. ${n.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 
 export default function OrdersPage() {
+  const storeName = useStoreName()
   const { currentUser, can } = useAuth()
   const [orders, setOrders] = useState<Invoice[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'dispatched' | 'completed' | 'refunded'>('all')
@@ -53,7 +55,7 @@ export default function OrdersPage() {
       .map(i => `• ${i.item_name || 'Item'} (${i.part_number || ''}) x${i.qty} = Rs. ${i.line_total.toLocaleString()}`)
       .join('\n')
 
-    const message = `*Al-Deewan Brand — Order Details* 👗\n` +
+    const message = `*${storeName} — Order Details* 👗\n` +
       `Invoice #: *${order.invoice_number}*\n` +
       `Date: ${order.date}\n` +
       `Status: *${order.status.toUpperCase()}*\n` +
@@ -62,7 +64,7 @@ export default function OrdersPage() {
       `Subtotal: Rs. ${order.subtotal.toLocaleString()}\n` +
       (order.discount_amount > 0 ? `Discount: -Rs. ${order.discount_amount.toLocaleString()}\n` : '') +
       `*Total Amount: Rs. ${order.grand_total.toLocaleString()}*\n\n` +
-      `Thank you for shopping with Al-Deewan Brand!`
+      `Thank you for shopping with ${storeName}!`
 
     const encoded = encodeURIComponent(message)
     const url = cleanPhone

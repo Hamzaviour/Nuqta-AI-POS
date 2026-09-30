@@ -1,12 +1,12 @@
-# Al-Deewan POS System — Comprehensive Data Migration Guide
+# Nuqta AI POS — Comprehensive Data Migration Guide
 
-This guide walks you through migrating all business data (Products, Stock Quantities, Costs, Retail Prices, Customers, Suppliers, and Opening Balances) from any previous POS or inventory management software into **Al-Deewan POS System**.
+This guide walks you through migrating all business data (Products, Stock Quantities, Costs, Retail Prices, Customers, Suppliers, and Opening Balances) from any previous POS or inventory management software into **Nuqta AI POS**.
 
 ---
 
 ## Migration Overview
 
-Al-Deewan POS System supports both **Self-Service CSV/Excel Bulk Import** and **Automated Direct Database Migration**.
+Nuqta AI POS supports both **Self-Service CSV/Excel Bulk Import** and **Automated Direct Database Migration**.
 
 ```
 [Previous POS Software] 
@@ -20,7 +20,7 @@ Al-Deewan POS System supports both **Self-Service CSV/Excel Bulk Import** and **
        ├─ Option B: Full Database ETL Script (All Ledgers & History)
        │
        ▼
-[Al-Deewan POS System Production Database]
+[Nuqta AI POS Production Database]
 ```
 
 ---
@@ -64,7 +64,7 @@ Open your previous POS software or database management tool and export your core
 
 ## Step 2: Prepare & Validate the Data
 
-Ensure your CSV or Excel files have clean headers matching the standard Al-Deewan format.
+Ensure your CSV or Excel files have clean headers matching the standard Nuqta format.
 
 ### Standard Product Import Template (`products.csv`)
 
@@ -85,11 +85,11 @@ Ensure your CSV or Excel files have clean headers matching the standard Al-Deewa
 
 ---
 
-## Step 3: Import Into Al-Deewan POS
+## Step 3: Import Into Nuqta AI POS
 
 ### Method A: Built-in CSV Import (Fastest & Simplest)
 
-1. Launch **Al-Deewan POS System**.
+1. Launch **Nuqta AI POS**.
 2. Click on **📦 Stock / Inventory** in the main navigation bar.
 3. In the top-right header, click the **`Import CSV`** button.
 4. Either:
@@ -101,9 +101,9 @@ Ensure your CSV or Excel files have clean headers matching the standard Al-Deewa
 ### Method B: Full Database Migration (Customers, Suppliers, History & Accounts)
 
 If you need a 100% turnkey migration including old invoice records and customer debt ledgers:
-1. Al-Deewan stores its SQLite database at:
-   - **Windows**: `%APPDATA%\Al-Deewan POS System\aldeewan-pos.db`
-   - **macOS**: `~/Library/Application Support/Al-Deewan POS System/aldeewan-pos.db`
+1. Nuqta stores its SQLite database at:
+   - **Windows**: `%APPDATA%\Nuqta AI POS\aldeewan-pos.db`
+   - **macOS**: `~/Library/Application Support/Nuqta AI POS/aldeewan-pos.db`
 2. Run our automated migration script against your exported SQL/CSV dump to populate `customers`, `suppliers`, `invoices`, and `journal_entries` with full relational integrity.
 
 ---
@@ -136,4 +136,4 @@ Once you have verified all data:
 ---
 
 ### Need Assistance?
-For custom data extraction from proprietary POS software (e.g., Microsoft Access `.mdb`, legacy SQL Server, or specialized databases), contact Al-Deewan Support or run the included ETL tools.
+For custom data extraction from proprietary POS software (e.g., Microsoft Access `.mdb`, legacy SQL Server, or specialized databases), contact Nuqta Support or run the included ETL tools.

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useStoreName } from '../../hooks/useStoreName'
 import {
   Clock, Search, Filter, RefreshCw, DollarSign, User, Phone,
   CheckCircle2, Printer, Send, CreditCard, ChevronRight, Eye,
@@ -15,6 +16,7 @@ const fmt = (n: number) =>
   `Rs. ${Number(n || 0).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 
 export default function PendingInvoicesPage() {
+  const storeName = useStoreName()
   const navigate = useNavigate()
   const { currentUser, isOwner, canEditInvoice } = useAuth()
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -153,7 +155,7 @@ export default function PendingInvoicesPage() {
       .join('\n')
 
     const message =
-      `*AL-DEEWAN BRAND — PAYMENT REMINDER* 🛍️\n` +
+      `*${storeName.toUpperCase()} — PAYMENT REMINDER* 🛍️\n` +
       `----------------------------------------\n` +
       `Invoice #: *${inv.invoice_number}*\n` +
       `Date: ${inv.date}\n` +
@@ -164,7 +166,7 @@ export default function PendingInvoicesPage() {
       `*PENDING BALANCE DUE: Rs. ${(inv.balance_due || 0).toLocaleString()}*\n` +
       `----------------------------------------\n` +
       `Please settle the outstanding balance at your earliest convenience.\n` +
-      `Thank you for shopping with Al-Deewan Brand!`
+      `Thank you for shopping with ${storeName}!`
 
     const url = cleanPhone
       ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
